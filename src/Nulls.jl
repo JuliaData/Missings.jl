@@ -4,9 +4,9 @@ module Nulls
 
 using Compat
 importall Base.Operators
-import Compat: xor
+import Compat: xor, iszero
 
-export null, ?
+export null, Null, ?
 
 if VERSION < v"0.6.0-dev.2746"
     immutable Null end
@@ -28,6 +28,11 @@ Base.size(x::Null, i::Integer) = i < 1 ? throw(BoundsError()) : 1
 Base.ndims(x::Null) = 0
 Base.getindex(x::Null, i) = i == 1 ? null : throw(BoundsError())
 
+# Iteration rules modeled after that for numbers
+Base.start(::Null) = false
+Base.next(::Null, ::Bool) = (null, true)
+Base.done(::Null, b::Bool) = b
+
 Base.promote_rule{T}(::Type{T}, ::Type{Null}) = Union{T, Null}
 
 # Comparison operators
@@ -42,19 +47,19 @@ Base.isless(::Null, b) = false
 Base.isless(a, ::Null) = true
 
 # Unary operators/functions
-for f in (:(+), :(-), :(*), :(/),
+for f in (:(+), :(-), :(Base.identity),
           :(Base.abs), :(Base.abs2), :(Base.sign),
           :(Base.acos), :(Base.acosh), :(Base.asin), :(Base.asinh), :(Base.atan), :(Base.atanh),
           :(Base.sin), :(Base.sinh), :(Base.cos), :(Base.cosh), :(Base.tan), :(Base.tanh),
           :(Base.exp), :(Base.exp2), :(Base.expm1), :(Base.log), :(Base.log10), :(Base.log1p),
           :(Base.log2), :(Base.exponent), :(Base.sqrt), :(Base.gamma), :(Base.lgamma),
-          :(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc)
-         )
+          :(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc))
     @eval $(f)(d::Null) = null
 end
 
 for f in (:(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Base.isodd),
-          :(Base.isinteger), :(Base.isreal), :(Base.isempty))
+          :(Base.isinteger), :(Base.isreal), :(Base.isimag), :(Base.isnan), :(Base.isempty),
+          :(Compat.iszero))
     @eval $(f)(d::Null) = false
 end
 
