@@ -30,9 +30,12 @@ using Base.Test, Nulls
     @test !(null != null)
     @test 1 != null
     @test null != 1
-    @test !(null < null)
-    @test !(null < 1)
-    @test 1 < null
+    @test isnull(null < null)
+    @test isnull(null < 1)
+    @test isnull(1 < null)
+    @test !isless(null, null)
+    @test !isless(null, 1)
+    @test isless(1, null)
 
     # All arithmetic operators return null when operating on two null's
     # All arithmetic operators return null when operating on a scalar and an null
