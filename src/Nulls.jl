@@ -1,5 +1,4 @@
 __precompile__()
-
 module Nulls
 
 using Compat
