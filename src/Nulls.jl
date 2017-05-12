@@ -4,7 +4,11 @@ importall Base.Operators
 
 export null, ?
 
-struct Null end
+if VERSION < v"0.6"
+    immutable Null end
+else
+    include_string("struct Null end")
+end
 
 const null = Null()
 
