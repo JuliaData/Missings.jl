@@ -12,7 +12,13 @@ using Compat
                                   conj, cos, cosh, tan, tanh,
                                   ceil, floor, round, trunc,
                                   exp, exp2, expm1, log, log10, log1p, log2,
-                                  exponent, sqrt, gamma, lgamma]
+                                  exponent, sqrt, gamma, lgamma,
+                                  identity]
+
+    const boolean_functions = [iseven, isodd, ispow2,
+                               isfinite, isinf, isnan, Compat.iszero,
+                               isinteger, isreal, isimag,
+                               isempty]
 
     # All unary operators return null when evaluating null
     for f in [+, -]
@@ -22,6 +28,11 @@ using Compat
     # All elementary functions return null when evaluating null
     for f in elementary_functions
         @test isnull(f(null))
+    end
+
+    # All boolean functions return false when evaluating null
+    for f in boolean_functions
+        @test !f(null)
     end
 
     # Comparison operators
