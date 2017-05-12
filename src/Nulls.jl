@@ -66,11 +66,11 @@ end
 
 # Bit operators
 (&)(::Null, ::Null) = null
-(&)(a::Null, b::Bool) = b ? null : false
-(&)(b::Bool, a::Null) = b ? null : false
+(&)(a::Null, b::Bool) = ifelse(b, null, false)
+(&)(b::Bool, a::Null) = ifelse(b, null, false)
 (|)(::Null, ::Null) = null
-(|)(a::Null, b::Bool) = b ? true : null
-(|)(b::Bool, a::Null) = b ? true : null
+(|)(a::Null, b::Bool) = ifelse(b, true, null)
+(|)(b::Bool, a::Null) = ifelse(b, true, null)
 Base.xor(::Null, ::Null) = null
 Base.xor(a::Null, b::Bool) = null
 Base.xor(b::Bool, a::Null) = null
