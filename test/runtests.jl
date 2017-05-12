@@ -1,4 +1,5 @@
 using Base.Test, Nulls
+using Compat
 
 @testset "Nulls" begin
 

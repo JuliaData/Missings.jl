@@ -1,18 +1,14 @@
+__precompile__()
+
 module Nulls
 
+using Compat
 importall Base.Operators
+import Compat: xor
 
 export null, ?
 
-if !isdefined(Base, :xor)
-    const xor = $
-    const ⊻ = xor
-    export xor, ⊻
-else
-    import Base.xor
-end
-
-if VERSION < v"0.6"
+if VERSION < v"0.6.0-dev.2746"
     immutable Null end
 else
     include_string("struct Null end")
@@ -32,7 +28,7 @@ Base.size(x::Null, i::Integer) = i < 1 ? throw(BoundsError()) : 1
 Base.ndims(x::Null) = 0
 Base.getindex(x::Null, i) = i == 1 ? null : throw(BoundsError())
 
-Base.promote_rule{T}(::Type{T}, ::Type{Null} ) = Union{T, Null}
+Base.promote_rule{T}(::Type{T}, ::Type{Null}) = Union{T, Null}
 
 # Comparison operators
 ==(::Null, ::Null) = true
