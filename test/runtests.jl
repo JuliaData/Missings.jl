@@ -1,6 +1,6 @@
-using Base.Test, Null
+using Base.Test, Nulls
 
-@testset "Null" begin
+@testset "Nulls" begin
 
     const bit_operators = [&, |, ⊻]
 
