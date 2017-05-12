@@ -4,6 +4,14 @@ importall Base.Operators
 
 export null, ?
 
+if !isdefined(Base, :xor)
+    const xor = $
+    const ⊻ = xor
+    export xor, ⊻
+else
+    import Base.xor
+end
+
 if VERSION < v"0.6"
     immutable Null end
 else
@@ -75,9 +83,9 @@ end
 (|)(::Null, ::Null) = null
 (|)(a::Null, b::Bool) = ifelse(b, true, null)
 (|)(b::Bool, a::Null) = ifelse(b, true, null)
-Base.xor(::Null, ::Null) = null
-Base.xor(a::Null, b::Bool) = null
-Base.xor(b::Bool, a::Null) = null
+xor(::Null, ::Null) = null
+xor(a::Null, b::Bool) = null
+xor(b::Bool, a::Null) = null
 
 # for f in (:(&), :(|), :(Base.xor))
 #     @eval begin
