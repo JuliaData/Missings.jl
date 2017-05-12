@@ -87,8 +87,4 @@ replace(itr, a, b) = (ifelse(v == a, b, v) for v in itr)
 replace(itr, b) = replace(itr, null, b)
 skip(itr, a=null) = (v for v in itr if v != a)
 
-# TODO
- # create a series of benchmarks comparing DataArrays, NullableArrays, Vector{Union{Null, T}}, and Vector{T}
- # create use-case list for DataFrames: sql-like operations, pivot operations, by, dplyr
-
 end # module
