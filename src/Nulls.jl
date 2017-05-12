@@ -34,7 +34,7 @@ Base.isless(::Null, b) = false
 Base.isless(a, ::Null) = true
 
 # Unary operators/functions
-for f in (:(Base.:+), :(Base.:-), :(Base.:*), :(Base.:/),
+for f in (:(+), :(-), :(*), :(/),
           :(Base.abs), :(Base.abs2), :(Base.sign),
           :(Base.acos), :(Base.acosh), :(Base.asin), :(Base.asinh), :(Base.atan), :(Base.atanh),
           :(Base.sin), :(Base.sinh), :(Base.cos), :(Base.cosh), :(Base.tan), :(Base.tanh),
@@ -51,7 +51,7 @@ for f in (:(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Bas
 end
 
 # Binary operators/functions
-for f in (:(Base.:+), :(Base.:-), :(Base.:*), :(Base.:/), :(Base.:^),
+for f in (:(+), :(-), :(*), :(/), :(^),
           :(Base.div), :(Base.mod), :(Base.fld), :(Base.rem), :(Base.min), :(Base.max))
     @eval begin
         # Scalar with null
