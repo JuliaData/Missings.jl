@@ -84,6 +84,7 @@ Base.xor(b::Bool, a::Null) = null
 # end
 
 replace(itr, a, b) = (ifelse(v == a, b, v) for v in itr)
+replace(itr, b) = replace(itr, null, b)
 skip(itr, a=null) = (v for v in itr if v != a)
 
 # TODO
