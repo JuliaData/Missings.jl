@@ -85,4 +85,25 @@ using Compat
     @test_throws BoundsError null[2]
 
     @test eltype([1, 2, null]) == ?Int
+
+    @test sprint(show, null) == "null"
+
+    # Iteration over scalars works as with numbers
+    for i in null
+        @test isnull(i)
+    end
+    @test !start(null)
+    let (a, b) = next(null, true)
+        @test isnull(a) && b
+    end
+    let (a, b) = next(null, false)
+        @test isnull(a) && b
+    end
+    @test done(null, true)
+    @test !done(null, false)
+
+    @test collect(Nulls.replace(1:4, 3, 0)) == [1, 2, 0, 4]
+    @test collect(Nulls.replace(1:4, 3)) == [1, 2, null, 4]
+    @test collect(Nulls.skip([1, 2, null, 4])) == [1, 2, 4]
+    @test collect(Nulls.skip(1:4, 3)) == [1, 2, 4]
 end
