@@ -106,4 +106,6 @@ using Compat
     @test collect(Nulls.replace(1:4, 3)) == [1, 2, null, 4]
     @test collect(Nulls.skip([1, 2, null, 4])) == [1, 2, 4]
     @test collect(Nulls.skip(1:4, 3)) == [1, 2, 4]
+
+    @test isnull(convert(Null, 1))
 end

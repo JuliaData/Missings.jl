@@ -33,6 +33,7 @@ Base.next(::Null, ::Bool) = (null, true)
 Base.done(::Null, b::Bool) = b
 
 Base.promote_rule{T}(::Type{T}, ::Type{Null}) = Union{T, Null}
+Base.convert(::Type{Null}, x) = null
 
 # Comparison operators
 ==(::Null, ::Null) = true
