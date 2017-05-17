@@ -40,9 +40,9 @@ Base.convert(::Type{Null}, ::Null) = null
 ==(::Null, ::Null) = true
 ==(::Null, b) = false
 ==(a, ::Null) = false
-<(::Null, ::Null) = null
-<(::Null, b) = null
-<(a, ::Null) = null
+<(::Null, ::Null) = false
+<(::Null, b) = false
+<(a, ::Null) = true
 Base.isless(::Null, ::Null) = false
 Base.isless(::Null, b) = false
 Base.isless(a, ::Null) = true
@@ -88,14 +88,6 @@ end
 xor(::Null, ::Null) = null
 xor(a::Null, b::Bool) = null
 xor(b::Bool, a::Null) = null
-
-# for f in (:(&), :(|), :(Base.xor))
-#     @eval begin
-#         # Scalar with null
-#         ($f)(::Null, ::Null) = null
-#         ($f)(::Null, b::Integer) = null
-#     end
-# end
 
 replace(itr, a, b) = (ifelse(v == a, b, v) for v in itr)
 replace(itr, b) = replace(itr, b, null)
