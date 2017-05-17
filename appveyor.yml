@@ -38,4 +38,4 @@ build_script:
       Pkg.clone(pwd(), \"Nulls\"); Pkg.build(\"Nulls\")"
 
 test_script:
-- C:\projects\julia\bin\julia -e "Pkg.test(\"Nulls\")"
+  - C:\projects\julia\bin\julia -e "Pkg.test(\"Nulls\")"
