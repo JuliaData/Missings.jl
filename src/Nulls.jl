@@ -19,6 +19,8 @@ Base.show(io::IO, x::Null) = print(io, "null")
 
 ?{T}(::Type{T}) = Union{T, Null}
 *(::typeof(?), x) = ?(x)
+T{T1}(::Type{Union{T1, Null}}) = T1
+
 Base.isnull(v::Null) = true
 
 Base.length(x::Null) = 1

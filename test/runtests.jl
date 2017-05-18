@@ -109,4 +109,6 @@ using Compat
 
     @test convert(Null, 1) === null
     @test convert(Null, null) === null
+
+    @test Nulls.T(?Int) == Int
 end
