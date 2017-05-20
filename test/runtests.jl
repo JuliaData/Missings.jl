@@ -107,7 +107,7 @@ using Compat
     @test collect(Nulls.skip([1, 2, null, 4])) == [1, 2, 4]
     @test collect(Nulls.skip(1:4, 3)) == [1, 2, 4]
 
-    @test convert(Null, 1) === null
+    @test Null(1) === null
     @test convert(Null, null) === null
 
     @test Nulls.T(?Int) == Int
