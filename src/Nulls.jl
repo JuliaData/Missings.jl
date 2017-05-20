@@ -52,7 +52,7 @@ Base.promote_rule{T}(::Type{T}, ::Type{Null}) = Union{T, Null}
 ==(a, ::Null) = false
 <(::Null, ::Null) = false
 <(::Null, b) = false
-<(a, ::Null) = true
+<(a, ::Null) = false
 Base.isless(::Null, ::Null) = false
 Base.isless(::Null, b) = false
 Base.isless(a, ::Null) = true
