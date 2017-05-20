@@ -39,12 +39,6 @@ nulls(dims...) = fill(null, dims)
 nulls{T >: Null}(::Type{T}, dims...) = fill!(Array{T}(dims), null)
 nulls{T}(::Type{T}, dims...) = fill!(Array{?T}(dims), null)
 
-Base.similar{T >: Null}(a::Array{T,1}) = nulls(T, size(a,1))
-Base.similar{T >: Null}(a::Array{T,2}) = nulls(T, size(a,1), size(a,2))
-Base.similar{T >: Null}(a::Array{T}) = nulls(T, size(a))
-Base.similar{T >: Null}(a::Array{T}, m::Int) = nulls(T, m)
-Base.similar{T >: Null}(a::Array{T}, dims...) = nulls(T, dims...)
-
 # Iteration rules modeled after that for numbers
 Base.start(::Null) = false
 Base.next(::Null, ::Bool) = (null, true)

@@ -116,7 +116,4 @@ using Compat
     @test nulls(Int, 1) == (?Int)[null]
     @test nulls(?Int, 1, 2) == (?Int)[null null]
     @test ?[1,2,3] == (?Int)[1,2,3]
-
-    @test similar(?[1,2,3]) == (?Int)[null, null, null]
-    @test similar(?[1,2,3], 4) == (?Int)[null, null, null, null]
 end
