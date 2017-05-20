@@ -111,4 +111,8 @@ using Compat
     @test convert(Null, null) === null
 
     @test Nulls.T(?Int) == Int
+
+    @test nulls(1) == [null]
+    @test nulls(Int, 1) == (?Int)[null]
+    @test nulls(?Int, 1, 2) == (?Int)[null null]
 end
