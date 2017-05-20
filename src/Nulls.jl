@@ -55,7 +55,7 @@ Base.convert{T}(::Type{Union{T, Null}}, x) = convert(T, x)
 ==(a, ::Null) = false
 <(::Null, ::Null) = false
 <(::Null, b) = false
-<(a, ::Null) = true
+<(a, ::Null) = false
 Base.isless(::Null, ::Null) = false
 Base.isless(::Null, b) = false
 Base.isless(a, ::Null) = true

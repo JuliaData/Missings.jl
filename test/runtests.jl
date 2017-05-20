@@ -44,7 +44,7 @@ using Compat
     @test null != 1
     @test !(null < null)
     @test !(null < 1)
-    @test 1 < null
+    @test !(1 < null)
     @test !isless(null, null)
     @test !isless(null, 1)
     @test isless(1, null)
