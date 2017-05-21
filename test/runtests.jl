@@ -107,6 +107,16 @@ using Compat
     @test collect(Nulls.skip([1, 2, null, 4])) == [1, 2, 4]
     @test collect(Nulls.skip(1:4, 3)) == [1, 2, 4]
 
+    x = convert(Vector{?Int}, [1.0, null])
+    @test isa(x, Vector{?Int})
+    @test x == [1, null]
+    x = convert(Vector{?Int}, [1.0])
+    @test isa(x, Vector{?Int})
+    @test x == [1]
+    x = convert(Vector{?Int}, [null])
+    @test isa(x, Vector{?Int})
+    @test x == [null]
+
     @test Nulls.T(?Int) == Int
 
     @test nulls(1) == [null]
