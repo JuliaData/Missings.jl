@@ -103,7 +103,7 @@ using Compat
     @test !done(null, false)
 
     @test collect(Nulls.replace(1:4, 3, 0)) == [1, 2, 0, 4]
-    @test collect(Nulls.replace(1:4, 3)) == [1, 2, null, 4]
+    @test collect(Nulls.replace([1, 2, null, 4], 3)) == collect(1:4)
     @test collect(Nulls.skip([1, 2, null, 4])) == [1, 2, 4]
     @test collect(Nulls.skip(1:4, 3)) == [1, 2, 4]
 
