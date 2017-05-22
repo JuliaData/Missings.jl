@@ -125,4 +125,5 @@ using Compat
     @test ?[1,2,3] == (?Int)[1,2,3]
 
     @test convert(?Int, 1.0) == 1
+    @test convert(?Int, null) == null
 end
