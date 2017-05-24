@@ -5,7 +5,7 @@ using Compat
 importall Base.Operators
 import Compat: xor, iszero
 
-export null, nulls, Null, ?
+export null, nulls, Null, ?, dropnull, dropnull!
 
 if VERSION < v"0.6.0-dev.2746"
     immutable Null end
@@ -103,5 +103,12 @@ xor(b::Bool, a::Null) = null
 replace(itr, a, b) = (ifelse(v == a, b, v) for v in itr)
 replace(itr, b) = replace(itr, null, b)
 skip(itr, a=null) = (v for v in itr if v != a)
+
+function dropnull(X::Vector{T}) where {T >: Null}
+    convert(Vector{Nulls.T(eltype(X))}, filter(!isnull, X))
+end
+function dropnull!(X::Vector{T}) where {T >: Null}
+    convert(Vector{Nulls.T(eltype(X))}, filter!(!isnull, X))
+end
 
 end # module
