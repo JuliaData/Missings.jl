@@ -126,3 +126,51 @@ using Compat
 
     @test convert(?Int, 1.0) == 1
 end
+
+@testset "describe" begin
+    using Base.Test, Nulls
+    using Compat
+    using StatsBase
+    io = IOBuffer()
+    describe(io, Vector{?Int}(1:3))
+    @test String(take!(io)) == """
+                               Summary Stats:
+                               Mean:           2.000000
+                               Minimum:        1.000000
+                               1st Quartile:   1.500000
+                               Median:         2.000000
+                               3rd Quartile:   2.500000
+                               Maximum:        3.000000
+                               Length:         3
+                               Type:           Int64
+                               Number Missing: 0
+                               % Missing:      0.000000
+                               """
+    describe(io, nulls(Int, 3))
+    @test String(take!(io)) == """
+                               Summary Stats:
+                               Length:         3
+                               Type:           Int64
+                               Number Missing: 3
+                               % Missing:      100.000000
+                               """
+    describe(io, Vector{?Char}('a':'c'))
+    @test String(take!(io)) == """
+                               Summary Stats:
+                               Length:         3
+                               Type:           Char
+                               Number Unique:  3
+                               Number Missing: 0
+                               % Missing:      0.000000
+                               """
+    describe(io, nulls(Char, 3))
+    @test String(take!(io)) == """
+                               Summary Stats:
+                               Length:         3
+                               Type:           Char
+                               Number Unique:  1
+                               Number Missing: 3
+                               % Missing:      100.000000
+                               """
+    describe(io, Vector{?Int}(1:3))
+end
