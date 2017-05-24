@@ -125,4 +125,15 @@ using Compat
     @test ?[1,2,3] == (?Int)[1,2,3]
 
     @test convert(?Int, 1.0) == 1
+
+    x = vcat(nulls(Int, 5), Vector(1:5))
+
+    @test dropnull(x) == Vector(1:5)
+    @test x == vcat(nulls(Int, 5), Vector(1:5))
+    @test typeof(dropnull(x)) == Vector{Int}
+
+    @test dropnull!(x) == Vector(1:5)
+    @test typeof(dropnull!(x)) == Vector{Int}
+    @test x == Vector(1:5)
+    @test typeof(x) == Vector{?Int}
 end
