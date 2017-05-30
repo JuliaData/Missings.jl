@@ -25,6 +25,7 @@ function Base.getindex(::typeof(?), x...)
     return Array{?eltype(A)}(A)
 end
 T{T1}(::Type{Union{T1, Null}}) = T1
+T{T1}(::Type{T1}) = T1
 
 Base.isnull(v::Null) = true
 
@@ -33,6 +34,10 @@ Base.size(x::Null) = ()
 Base.size(x::Null, i::Integer) = i < 1 ? throw(BoundsError()) : 1
 Base.ndims(x::Null) = 0
 Base.getindex(x::Null, i) = i == 1 ? null : throw(BoundsError())
+
+# zero, one
+Base.zero{T}(::Type{Union{T, Null}}) = zero(T)
+Base.one{T}(::Type{Union{T, Null}}) = one(T)
 
 # vector constructors
 nulls(dims...) = fill(null, dims)

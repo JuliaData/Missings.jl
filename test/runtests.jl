@@ -125,4 +125,7 @@ using Compat
     @test ?[1,2,3] == (?Int)[1,2,3]
 
     @test convert(?Int, 1.0) == 1
+
+    @test zero(?Int) === zero(Int)
+    @test one(?Float64) === zero(Float64)
 end
