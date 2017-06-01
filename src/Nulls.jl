@@ -54,8 +54,6 @@ Base.convert{T}(::Type{Union{T, Null}}, x) = convert(T, x)
 
 # Comparison operators
 ==(::Null, ::Null) = true
-==(::Null, b) = false
-==(a, ::Null) = false
 <(::Null, ::Null) = false
 <(::Null, b) = false
 <(a, ::Null) = false
