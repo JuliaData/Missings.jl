@@ -53,7 +53,6 @@ Base.promote_rule{T}(::Type{T}, ::Type{Null}) = Union{T, Null}
 Base.convert{T}(::Type{Union{T, Null}}, x) = convert(T, x)
 
 # Comparison operators
-==(::Null, ::Null) = true
 <(::Null, ::Null) = false
 <(::Null, b) = false
 <(a, ::Null) = false
