@@ -60,6 +60,11 @@ Base.convert{T}(::Type{Union{T, Null}}, x) = convert(T, x)
 Base.isless(::Null, ::Null) = false
 Base.isless(::Null, b) = false
 Base.isless(a, ::Null) = true
+if VERSION < v"0.7.0-DEV.300"
+    <=(::Null, ::Null) = true
+    <=(::Null, b) = false
+    <=(a, ::Null) = false
+end
 
 # Unary operators/functions
 for f in (:(+), :(-), :(Base.identity),
