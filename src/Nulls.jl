@@ -7,25 +7,21 @@ import Compat: xor, iszero
 
 export null, nulls, Null, ?
 
-if VERSION < v"0.6.0-dev.2746"
-    immutable Null end
-else
-    include_string("struct Null end")
-end
+struct Null end
 
 const null = Null()
 
 Base.show(io::IO, x::Null) = print(io, "null")
 
-?{T}(::Type{T}) = Union{T, Null}
+?(::Type{T}) where {T} = Union{T, Null}
 
 *(::typeof(?), x) = ?(x)
 function Base.getindex(::typeof(?), x...)
     A = collect(x)
     return Array{?eltype(A)}(A)
 end
-T{T1}(::Type{Union{T1, Null}}) = T1
-T{T1}(::Type{T1}) = T1
+T(::Type{Union{T1, Null}}) where {T1} = T1
+T(::Type{T1}) where {T1} = T1
 
 Base.isnull(v::Null) = true
 
@@ -36,21 +32,21 @@ Base.ndims(x::Null) = 0
 Base.getindex(x::Null, i) = i == 1 ? null : throw(BoundsError())
 
 # zero, one
-Base.zero{T}(::Type{Union{T, Null}}) = zero(T)
-Base.one{T}(::Type{Union{T, Null}}) = one(T)
+Base.zero(::Type{Union{T, Null}}) where {T} = zero(T)
+Base.one(::Type{Union{T, Null}}) where {T} = one(T)
 
 # vector constructors
 nulls(dims...) = fill(null, dims)
-nulls{T >: Null}(::Type{T}, dims...) = fill!(Array{T}(dims), null)
-nulls{T}(::Type{T}, dims...) = fill!(Array{?T}(dims), null)
+nulls(::Type{T}, dims...) where {T >: Null} = fill!(Array{T}(dims), null)
+nulls(::Type{T}, dims...) where {T} = fill!(Array{Union{T, Null}}(dims), null)
 
 # Iteration rules modeled after that for numbers
 Base.start(::Null) = false
 Base.next(::Null, ::Bool) = (null, true)
 Base.done(::Null, b::Bool) = b
 
-Base.promote_rule{T}(::Type{T}, ::Type{Null}) = Union{T, Null}
-Base.convert{T}(::Type{Union{T, Null}}, x) = convert(T, x)
+Base.promote_rule(::Type{T}, ::Type{Null}) where {T} = Union{T, Null}
+Base.convert(::Type{Union{T, Null}}, x) where {T} = convert(T, x)
 
 # Comparison operators
 <(::Null, ::Null) = false
