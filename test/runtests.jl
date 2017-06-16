@@ -129,6 +129,8 @@ using Compat
 
     @test convert(?Int, 1.0) == 1
 
-    @test zero(?Int) === zero(Int)
-    @test one(?Float64) === one(Float64)
+    @test Nulls.T(Any) == Any
+    io = IOBuffer()
+    show(io, ?Int)
+    @test String(take!(io)) == "?Int64"
 end

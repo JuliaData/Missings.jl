@@ -12,6 +12,8 @@ struct Null end
 const null = Null()
 
 Base.show(io::IO, x::Null) = print(io, "null")
+Base.show(io::IO, ::Type{Union{T, Null}}) where {T} = print(io, "?$T")
+Base.show(io::IO, ::Type{Any}) = print(io, "Any")
 
 ?(::Type{T}) where {T} = Union{T, Null}
 
@@ -22,6 +24,7 @@ function Base.getindex(::typeof(?), x...)
 end
 T(::Type{Union{T1, Null}}) where {T1} = T1
 T(::Type{T1}) where {T1} = T1
+T(::Type{Any}) = Any
 
 Base.isnull(v::Null) = true
 
@@ -30,10 +33,6 @@ Base.size(x::Null) = ()
 Base.size(x::Null, i::Integer) = i < 1 ? throw(BoundsError()) : 1
 Base.ndims(x::Null) = 0
 Base.getindex(x::Null, i) = i == 1 ? null : throw(BoundsError())
-
-# zero, one
-Base.zero(::Type{Union{T, Null}}) where {T} = zero(T)
-Base.one(::Type{Union{T, Null}}) where {T} = one(T)
 
 # vector constructors
 nulls(dims...) = fill(null, dims)
