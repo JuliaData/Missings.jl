@@ -131,6 +131,6 @@ using Compat
 
     @test Nulls.T(Any) == Any
     io = IOBuffer()
-    show(io, ?Int)
-    @test String(take!(io)) == "?Int64"
+    show(io, ?Float64)
+    @test String(take!(io)) == "?Float64"
 end
