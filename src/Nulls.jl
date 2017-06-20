@@ -1,8 +1,9 @@
 __precompile__()
 module Nulls
 
+import Base: *, <, ==, <=, +, -, ^, /, &, |
+
 using Compat
-importall Base.Operators
 import Compat: xor, iszero
 
 export null, nulls, Null, ?
