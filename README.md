@@ -5,7 +5,7 @@
 
 | **PackageEvaluator**                                            | **Build Status**                                                                                |
 |:---------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
-|[![][pkg-0.5-img]][pkg-0.5-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] |
+|[![][pkg-0.6-img]][pkg-0.6-url] | [![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url] |
 
 
 ## Installation
@@ -42,6 +42,9 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 [codecov-url]: https://codecov.io/gh/JuliaData/Nulls.jl
 
 [issues-url]: https://github.com/JuliaData/Nulls.jl/issues
+
+[pkg-0.6-img]: http://pkg.julialang.org/badges/Nulls_0.6.svg
+[pkg-0.6-url]: http://pkg.julialang.org/?pkg=Nulls
 
 ## Documentation
 
