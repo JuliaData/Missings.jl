@@ -1,24 +1,23 @@
 using Base.Test, Nulls
-using Compat
 
 @testset "Nulls" begin
 
-    const bit_operators = [&, |, ⊻]
+    bit_operators = [&, |, ⊻]
 
-    const arithmetic_operators = [+, -, *, /, ^, Base.div, Base.mod, Base.fld, Base.rem]
+    arithmetic_operators = [+, -, *, /, ^, Base.div, Base.mod, Base.fld, Base.rem]
 
-    const elementary_functions = [abs, abs2, sign,
-                                  acos, acosh, asin, asinh, atan, atanh, sin, sinh,
-                                  conj, cos, cosh, tan, tanh,
-                                  ceil, floor, round, trunc,
-                                  exp, exp2, expm1, log, log10, log1p, log2,
-                                  exponent, sqrt, gamma, lgamma,
-                                  identity]
+    elementary_functions = [abs, abs2, sign,
+                            acos, acosh, asin, asinh, atan, atanh, sin, sinh,
+                            conj, cos, cosh, tan, tanh,
+                            ceil, floor, round, trunc,
+                            exp, exp2, expm1, log, log10, log1p, log2,
+                            exponent, sqrt, gamma, lgamma,
+                            identity]
 
-    const boolean_functions = [iseven, isodd, ispow2,
-                               isfinite, isinf, isnan, Compat.iszero,
-                               isinteger, isreal, isimag,
-                               isempty]
+    boolean_functions = [iseven, isodd, ispow2,
+                         isfinite, isinf, isnan, iszero,
+                         isinteger, isreal, isimag,
+                         isempty]
 
     # All unary operators return null when evaluating null
     for f in [+, -]
@@ -87,7 +86,7 @@ using Compat
     @test null[1] == null
     @test_throws BoundsError null[2]
 
-    @test eltype([1, 2, null]) == ?Int
+    @test eltype([1, 2, null]) == Union{Int, Null}
 
     @test sprint(show, null) == "null"
 
@@ -110,27 +109,27 @@ using Compat
     @test collect(Nulls.skip([1, 2, null, 4])) == [1, 2, 4]
     @test collect(Nulls.skip(1:4, 3)) == [1, 2, 4]
 
-    x = convert(Vector{?Int}, [1.0, null])
-    @test isa(x, Vector{?Int})
+    x = convert(Vector{Union{Int, Null}}, [1.0, null])
+    @test isa(x, Vector{Union{Int, Null}})
     @test x == [1, null]
-    x = convert(Vector{?Int}, [1.0])
-    @test isa(x, Vector{?Int})
+    x = convert(Vector{Union{Int, Null}}, [1.0])
+    @test isa(x, Vector{Union{Int, Null}})
     @test x == [1]
-    x = convert(Vector{?Int}, [null])
-    @test isa(x, Vector{?Int})
+    x = convert(Vector{Union{Int, Null}}, [null])
+    @test isa(x, Vector{Union{Int, Null}})
     @test x == [null]
 
-    @test Nulls.T(?Int) == Int
+    @test Nulls.T(Union{Int, Null}) == Int
 
     @test nulls(1) == [null]
-    @test nulls(Int, 1) == (?Int)[null]
-    @test nulls(?Int, 1, 2) == (?Int)[null null]
-    @test ?[1,2,3] == (?Int)[1,2,3]
+    @test nulls(Int, 1) == (Union{Int, Null})[null]
+    @test nulls(Union{Int, Null}, 1, 2) == (Union{Int, Null})[null null]
+    @test Union{Int, Null}[1,2,3] == (Union{Int, Null})[1,2,3]
 
-    @test convert(?Int, 1.0) == 1
+    @test convert(Union{Int, Null}, 1.0) == 1
 
     @test Nulls.T(Any) == Any
     io = IOBuffer()
-    show(io, ?Float64)
+    show(io, Union{Float64, Null})
     @test String(take!(io)) == "?Float64"
 end

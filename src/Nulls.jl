@@ -1,12 +1,9 @@
-__precompile__()
+__precompile__(true)
 module Nulls
 
-import Base: *, <, ==, <=, +, -, ^, /, &, |
+import Base: *, <, ==, <=, +, -, ^, /, &, |, xor
 
-using Compat
-import Compat: xor, iszero
-
-export null, nulls, Null, ?
+export null, nulls, Null
 
 struct Null end
 
@@ -16,13 +13,6 @@ Base.show(io::IO, x::Null) = print(io, "null")
 Base.show(io::IO, ::Type{Union{T, Null}}) where {T} = print(io, "?$T")
 Base.show(io::IO, ::Type{Any}) = print(io, "Any")
 
-?(::Type{T}) where {T} = Union{T, Null}
-
-*(::typeof(?), x) = ?(x)
-function Base.getindex(::typeof(?), x...)
-    A = collect(x)
-    return Array{?eltype(A)}(A)
-end
 T(::Type{Union{T1, Null}}) where {T1} = T1
 T(::Type{T1}) where {T1} = T1
 T(::Type{Any}) = Any
@@ -74,7 +64,7 @@ end
 
 for f in (:(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Base.isodd),
           :(Base.isinteger), :(Base.isreal), :(Base.isimag), :(Base.isnan), :(Base.isempty),
-          :(Compat.iszero))
+          :(Base.iszero))
     @eval $(f)(d::Null) = false
 end
 
