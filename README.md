@@ -49,5 +49,3 @@ Contributions are very welcome, as are feature requests and suggestions. Please 
 ## Documentation
 
 Nulls.jl is a very simple package: it provides a single type `Null` with a single instance `null`. It also defines basic operators on `null` so that it essentially becomes a `NaN` for any type. e.g. `null < 1 == false` and `null == 1 == false`. It is also not dissimilar to the type `Void` with single instance `nothing` in Julia. The difference is where `nothing` is used as, for example, the return type of `print`, `null` has more operations defined and conceptually is used to represent missing values in data.
-
-For convenience, Nulls.jl also defines the `?` operator so that it can be used like: `?Int => Union{Int, Null}`. This is convenient for annotating method signatures (`f(x::(?Int))`), or type-tagging container structures like arrays, (`A = Vector{?Int}(n)`).
