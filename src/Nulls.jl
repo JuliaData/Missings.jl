@@ -10,7 +10,6 @@ struct Null end
 const null = Null()
 
 Base.show(io::IO, x::Null) = print(io, "null")
-Base.show(io::IO, ::Type{Union{T, Null}}) where {T} = print(io, "?$T")
 Base.show(io::IO, ::Type{Any}) = print(io, "Any")
 
 T(::Type{Union{T1, Null}}) where {T1} = T1

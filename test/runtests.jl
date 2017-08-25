@@ -131,5 +131,5 @@ using Base.Test, Nulls
     @test Nulls.T(Any) == Any
     io = IOBuffer()
     show(io, Union{Float64, Null})
-    @test String(take!(io)) == "?Float64"
+    @test String(take!(io)) == "Union{Nulls.Null, Float64}"
 end
