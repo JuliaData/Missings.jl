@@ -129,7 +129,4 @@ using Base.Test, Nulls
     @test convert(Union{Int, Null}, 1.0) == 1
 
     @test Nulls.T(Any) == Any
-    io = IOBuffer()
-    show(io, Union{Float64, Null})
-    @test String(take!(io)) == "Union{Nulls.Null, Float64}"
 end
