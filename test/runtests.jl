@@ -109,6 +109,17 @@ using Base.Test, Nulls
     @test collect(Nulls.skip([1, 2, null, 4])) == [1, 2, 4]
     @test collect(Nulls.skip(1:4, 3)) == [1, 2, 4]
 
+    @test Nulls.coalesce(null, 1) === 1
+    @test Nulls.coalesce(1, null) === 1
+    @test Nulls.coalesce(null, null) === null
+    @test Nulls.coalesce.([null, 1, null], 0) == [0, 1, 0]
+    @test Nulls.coalesce.([null, 1, null], 0) isa Vector{Int}
+    @test Nulls.coalesce.([null, 1, null], [0, 10, 5]) == [0, 1, 5]
+    @test Nulls.coalesce.([null, 1, null], [0, 10, 5]) isa Vector{Int}
+    @test Nulls.coalesce.([null, 1, null], [0, null, null]) == [0, 1, null]
+    # Fails in Julia 0.6 and 0.7.0-DEV.1556
+    @test_broken Nulls.coalesce.([null, 1, null], [0, null, null]) isa Vector{Union{Null, Int}}
+
     x = convert(Vector{Union{Int, Null}}, [1.0, null])
     @test isa(x, Vector{Union{Int, Null}})
     @test x == [1, null]

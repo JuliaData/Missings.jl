@@ -96,4 +96,41 @@ replace(itr, a, b) = (ifelse(v == a, b, v) for v in itr)
 replace(itr, b) = replace(itr, null, b)
 skip(itr, a=null) = (v for v in itr if v != a)
 
+"""
+    coalesce(x, y...)
+
+Return the first non-`null` value in the arguments, or `null` if all arguments are `null`.
+
+In its broadcasted form, this function can be used to replace all null values
+in an array with a given value (see examples).
+
+# Examples
+
+```jldoctest
+julia> coalesce(null, 1)
+1
+
+julia> coalesce(1, null)
+1
+
+julia> coalesce(null, null)
+null
+
+julia> coalesce.([null, 1, null], 0)
+3-element Array{$Int,1}:
+ 0
+ 1
+ 0
+
+julia> coalesce.([null, 1, null], [0, 10, 5])
+3-element Array{$Int,1}:
+ 0
+ 1
+ 5
+
+```
+"""
+coalesce(x) = x
+coalesce(x, y...) = ifelse(x !== null, x, coalesce(y...))
+
 end # module
