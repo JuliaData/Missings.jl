@@ -91,9 +91,8 @@ xor(::Null, ::Null) = null
 xor(a::Null, b::Bool) = null
 xor(b::Bool, a::Null) = null
 
-replace(itr, a, b) = (ifelse(v == a, b, v) for v in itr)
-replace(itr, b) = replace(itr, null, b)
-skip(itr, a=null) = (v for v in itr if v != a)
+replace(itr, x) = (ifelse(v !== null, v, x) for v in itr)
+skip(itr) = (v for v in itr if v !== null)
 
 """
     coalesce(x, y...)
