@@ -104,10 +104,8 @@ using Base.Test, Nulls
     @test done(null, true)
     @test !done(null, false)
 
-    @test collect(Nulls.replace(1:4, 3, 0)) == [1, 2, 0, 4]
     @test collect(Nulls.replace([1, 2, null, 4], 3)) == collect(1:4)
     @test collect(Nulls.skip([1, 2, null, 4])) == [1, 2, 4]
-    @test collect(Nulls.skip(1:4, 3)) == [1, 2, 4]
 
     x = convert(Vector{Union{Int, Null}}, [1.0, null])
     @test isa(x, Vector{Union{Int, Null}})
