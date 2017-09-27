@@ -78,6 +78,13 @@ using Base.Test, Nulls
     @test isnull(xor(null, false))
     @test isnull(xor(false, null))
 
+    @test isnull(null & 1)
+    @test isnull(1 & null)
+    @test isnull(null | 1)
+    @test isnull(1 | null)
+    @test isnull(xor(null, 1))
+    @test isnull(xor(1, null))
+
     @test length(null) == 1
     @test size(null) == ()
     @test size(null, 1) == 1
