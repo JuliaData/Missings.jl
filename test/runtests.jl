@@ -113,6 +113,8 @@ using Base.Test, Nulls
 
     @test collect(Nulls.replace([1, 2, null, 4], 3)) == collect(1:4)
     @test collect(Nulls.skip([1, 2, null, 4])) == [1, 2, 4]
+    @test collect(Nulls.fail([1, 2, 3, 4])) == [1, 2, 3, 4]
+    @test_throws NullException collect(Nulls.fail([1, 2, null, 4]))
 
     @test Nulls.coalesce(null, 1) === 1
     @test Nulls.coalesce(1, null) === 1

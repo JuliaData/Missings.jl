@@ -99,6 +99,7 @@ xor(::Integer, ::Null) = null
 
 replace(itr, x) = (ifelse(v !== null, v, x) for v in itr)
 skip(itr) = (v for v in itr if v !== null)
+fail(itr) = (v !== null ? v : throw(NullException()) for v in itr)
 
 """
     coalesce(x, y...)
