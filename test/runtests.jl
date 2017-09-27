@@ -12,7 +12,7 @@ using Base.Test, Nulls
                             ceil, floor, round, trunc,
                             exp, exp2, expm1, log, log10, log1p, log2,
                             exponent, sqrt, gamma, lgamma,
-                            identity]
+                            identity, zero]
 
     boolean_functions = [iseven, isodd, ispow2,
                          isfinite, isinf, isnan, iszero,
@@ -33,6 +33,9 @@ using Base.Test, Nulls
     for f in boolean_functions
         @test !f(null)
     end
+
+    @test zero(Union{Int, Null}) === 0
+    @test zero(Union{Float64, Null}) === 0.0
 
     # Comparison operators
     @test null == null
