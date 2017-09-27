@@ -50,7 +50,7 @@ if VERSION < v"0.7.0-DEV.300"
 end
 
 # Unary operators/functions
-for f in (:(+), :(-), :(Base.identity),
+for f in (:(+), :(-), :(Base.identity), :(Base.zero),
           :(Base.abs), :(Base.abs2), :(Base.sign),
           :(Base.acos), :(Base.acosh), :(Base.asin), :(Base.asinh), :(Base.atan), :(Base.atanh),
           :(Base.sin), :(Base.sinh), :(Base.cos), :(Base.cosh), :(Base.tan), :(Base.tanh),
@@ -65,6 +65,8 @@ for f in (:(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Bas
           :(Base.iszero))
     @eval $(f)(d::Null) = false
 end
+
+Base.zero(::Type{Union{T, Null}}) where {T} = zero(T)
 
 # Binary operators/functions
 for f in (:(+), :(-), :(*), :(/), :(^),
