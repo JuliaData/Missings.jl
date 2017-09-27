@@ -84,12 +84,18 @@ end
 (&)(::Null, ::Null) = null
 (&)(a::Null, b::Bool) = ifelse(b, null, false)
 (&)(b::Bool, a::Null) = ifelse(b, null, false)
+(&)(::Null, ::Integer) = null
+(&)(::Integer, ::Null) = null
 (|)(::Null, ::Null) = null
 (|)(a::Null, b::Bool) = ifelse(b, true, null)
 (|)(b::Bool, a::Null) = ifelse(b, true, null)
+(|)(::Null, ::Integer) = null
+(|)(::Integer, ::Null) = null
 xor(::Null, ::Null) = null
 xor(a::Null, b::Bool) = null
 xor(b::Bool, a::Null) = null
+xor(::Null, ::Integer) = null
+xor(::Integer, ::Null) = null
 
 replace(itr, x) = (ifelse(v !== null, v, x) for v in itr)
 skip(itr) = (v for v in itr if v !== null)
