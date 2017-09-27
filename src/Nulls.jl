@@ -1,7 +1,7 @@
 __precompile__(true)
 module Nulls
 
-import Base: *, <, ==, <=, +, -, ^, /, &, |, xor
+import Base: *, <, ==, !=, <=, +, -, ^, /, &, |, xor
 
 export null, nulls, Null
 
@@ -37,16 +37,26 @@ Base.promote_rule(::Type{T}, ::Type{Null}) where {T} = Union{T, Null}
 Base.convert(::Type{Union{T, Null}}, x) where {T} = convert(T, x)
 
 # Comparison operators
-<(::Null, ::Null) = false
-<(::Null, b) = false
-<(a, ::Null) = false
+==(::Null, ::Null) = null
+==(::Null, b) = null
+==(a, ::Null) = null
+# != must be defined explicitly since fallback expects a Bool
+!=(::Null, ::Null) = null
+!=(::Null, b) = null
+!=(a, ::Null) = null
+Base.isequal(::Null, ::Null) = true
+Base.isequal(::Null, b) = false
+Base.isequal(a, ::Null) = false
+<(::Null, ::Null) = null
+<(::Null, b) = null
+<(a, ::Null) = null
 Base.isless(::Null, ::Null) = false
 Base.isless(::Null, b) = false
 Base.isless(a, ::Null) = true
 if VERSION < v"0.7.0-DEV.300"
-    <=(::Null, ::Null) = true
-    <=(::Null, b) = false
-    <=(a, ::Null) = false
+    <=(::Null, ::Null) = null
+    <=(::Null, b) = null
+    <=(a, ::Null) = null
 end
 
 # Unary operators/functions

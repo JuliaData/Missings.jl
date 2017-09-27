@@ -35,18 +35,21 @@ using Base.Test, Nulls
     end
 
     # Comparison operators
-    @test null == null
-    @test !(1 == null)
-    @test !(null == 1)
-    @test !(null != null)
-    @test 1 != null
-    @test null != 1
-    @test !(null < null)
-    @test !(null < 1)
-    @test !(1 < null)
-    @test null <= null
-    @test !(null <= 1)
-    @test !(1 <= null)
+    @test (null == null) === null
+    @test (1 == null) === null
+    @test (null == 1) === null
+    @test (null != null) === null
+    @test (1 != null) === null
+    @test (null != 1) === null
+    @test isequal(null, null)
+    @test !isequal(1, null)
+    @test !isequal(null, 1)
+    @test (null < null) === null
+    @test (null < 1) === null
+    @test (1 < null) === null
+    @test (null <= null) === null
+    @test (null <= 1) === null
+    @test (1 <= null) === null
     @test !isless(null, null)
     @test !isless(null, 1)
     @test isless(1, null)
@@ -83,7 +86,7 @@ using Base.Test, Nulls
     @test size(null, 1) == 1
     @test_throws BoundsError size(null, 0)
     @test ndims(null) == 0
-    @test null[1] == null
+    @test null[1] === null
     @test_throws BoundsError null[2]
 
     @test eltype([1, 2, null]) == Union{Int, Null}
@@ -114,25 +117,27 @@ using Base.Test, Nulls
     @test Nulls.coalesce.([null, 1, null], 0) isa Vector{Int}
     @test Nulls.coalesce.([null, 1, null], [0, 10, 5]) == [0, 1, 5]
     @test Nulls.coalesce.([null, 1, null], [0, 10, 5]) isa Vector{Int}
-    @test Nulls.coalesce.([null, 1, null], [0, null, null]) == [0, 1, null]
+    @test isequal(Nulls.coalesce.([null, 1, null], [0, null, null]), [0, 1, null])
     # Fails in Julia 0.6 and 0.7.0-DEV.1556
     @test_broken Nulls.coalesce.([null, 1, null], [0, null, null]) isa Vector{Union{Null, Int}}
 
     x = convert(Vector{Union{Int, Null}}, [1.0, null])
     @test isa(x, Vector{Union{Int, Null}})
-    @test x == [1, null]
+    @test isequal(x, [1, null])
     x = convert(Vector{Union{Int, Null}}, [1.0])
     @test isa(x, Vector{Union{Int, Null}})
     @test x == [1]
     x = convert(Vector{Union{Int, Null}}, [null])
     @test isa(x, Vector{Union{Int, Null}})
-    @test x == [null]
+    @test isequal(x, [null])
 
     @test Nulls.T(Union{Int, Null}) == Int
 
-    @test nulls(1) == [null]
-    @test nulls(Int, 1) == (Union{Int, Null})[null]
-    @test nulls(Union{Int, Null}, 1, 2) == (Union{Int, Null})[null null]
+    @test isequal(nulls(1), [null])
+    @test isequal(nulls(Int, 1), [null])
+    @test nulls(Int, 1) isa Vector{Union{Int, Null}}
+    @test isequal(nulls(Union{Int, Null}, 1, 2), [null null])
+    @test nulls(Union{Int, Null}, 1, 2) isa Matrix{Union{Int, Null}}
     @test Union{Int, Null}[1,2,3] == (Union{Int, Null})[1,2,3]
 
     @test convert(Union{Int, Null}, 1.0) == 1
