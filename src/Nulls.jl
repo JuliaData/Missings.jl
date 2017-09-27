@@ -1,7 +1,7 @@
 __precompile__(true)
 module Nulls
 
-import Base: *, <, ==, !=, <=, +, -, ^, /, &, |, xor
+import Base: *, <, ==, !=, <=, !, +, -, ^, /, &, |, xor
 
 export null, nulls, Null
 
@@ -60,7 +60,7 @@ if VERSION < v"0.7.0-DEV.300"
 end
 
 # Unary operators/functions
-for f in (:(+), :(-), :(Base.identity), :(Base.zero),
+for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
           :(Base.abs), :(Base.abs2), :(Base.sign),
           :(Base.acos), :(Base.acosh), :(Base.asin), :(Base.asinh), :(Base.atan), :(Base.atanh),
           :(Base.sin), :(Base.sinh), :(Base.cos), :(Base.cosh), :(Base.tan), :(Base.tanh),
