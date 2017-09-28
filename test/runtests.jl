@@ -20,7 +20,7 @@ using Base.Test, Nulls
                          isempty]
 
     # All unary operators return null when evaluating null
-    for f in [+, -]
+    for f in [!, +, -]
         @test isnull(f(null))
     end
 
