@@ -2,6 +2,7 @@ __precompile__(true)
 module Nulls
 
 import Base: *, <, ==, !=, <=, !, +, -, ^, /, &, |, xor
+using Compat: AbstractRange
 
 export null, nulls, Null
 
@@ -149,5 +150,60 @@ julia> coalesce.([null, 1, null], [0, 10, 5])
 """
 coalesce(x) = x
 coalesce(x, y...) = ifelse(x !== null, x, coalesce(y...))
+
+# AbstractArray{>:Null} functions
+
+function ==(A::AbstractArray{>:Null}, B::AbstractArray)
+    if indices(A) != indices(B)
+        return false
+    end
+    if isa(A,AbstractRange) != isa(B,AbstractRange)
+        return false
+    end
+    anynull = false
+    @inbounds for (a, b) in zip(A, B)
+        eq = (a == b)
+        if eq === false
+            return false
+        else
+            anynull |= isnull(eq)
+        end
+    end
+    return anynull ? null : true
+end
+
+==(A::AbstractArray, B::AbstractArray{>:Null}) = (B == A)
+==(A::AbstractArray{>:Null}, B::AbstractArray{>:Null}) =
+    invoke(==, Tuple{AbstractArray{>:Null}, AbstractArray}, A, B)
+
+!=(x::AbstractArray{>:Null}, y::AbstractArray) = !(x == y)
+!=(x::AbstractArray, y::AbstractArray{>:Null}) = !(x == y)
+!=(x::AbstractArray{>:Null}, y::AbstractArray{>:Null}) = !(x == y)
+
+function Base.any(f, A::AbstractArray{>:Null})
+    anynull = false
+    @inbounds for x in A
+        v = f(x)
+        if v === true
+            return true
+        else
+            anynull |= isnull(v)
+        end
+    end
+    return anynull ? null : false
+end
+
+function Base.all(f, A::AbstractArray{>:Null})
+    anynull = false
+    @inbounds for x in A
+        v = f(x)
+        if v === false
+            return false
+        else
+            anynull |= isnull(v)
+        end
+    end
+    return anynull ? null : true
+end
 
 end # module
