@@ -12,12 +12,11 @@ using Base.Test, Nulls
                             ceil, floor, round, trunc,
                             exp, exp2, expm1, log, log10, log1p, log2,
                             exponent, sqrt, gamma, lgamma,
-                            identity, zero]
-
-    boolean_functions = [iseven, isodd, ispow2,
-                         isfinite, isinf, isnan, iszero,
-                         isinteger, isreal, isimag,
-                         isempty]
+                            identity, zero,
+                            iseven, isodd, ispow2,
+                            isfinite, isinf, isnan, iszero,
+                            isinteger, isreal, isimag,
+                            isempty]
 
     # All unary operators return null when evaluating null
     for f in [!, +, -]
@@ -27,11 +26,6 @@ using Base.Test, Nulls
     # All elementary functions return null when evaluating null
     for f in elementary_functions
         @test isnull(f(null))
-    end
-
-    # All boolean functions return false when evaluating null
-    for f in boolean_functions
-        @test !f(null)
     end
 
     @test zero(Union{Int, Null}) === 0

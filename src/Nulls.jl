@@ -66,14 +66,11 @@ for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
           :(Base.sin), :(Base.sinh), :(Base.cos), :(Base.cosh), :(Base.tan), :(Base.tanh),
           :(Base.exp), :(Base.exp2), :(Base.expm1), :(Base.log), :(Base.log10), :(Base.log1p),
           :(Base.log2), :(Base.exponent), :(Base.sqrt), :(Base.gamma), :(Base.lgamma),
-          :(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc))
-    @eval $(f)(d::Null) = null
-end
-
-for f in (:(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Base.isodd),
+          :(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc),
+          :(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Base.isodd),
           :(Base.isinteger), :(Base.isreal), :(Base.isimag), :(Base.isnan), :(Base.isempty),
           :(Base.iszero))
-    @eval $(f)(d::Null) = false
+    @eval $(f)(d::Null) = null
 end
 
 Base.zero(::Type{Union{T, Null}}) where {T} = zero(T)
