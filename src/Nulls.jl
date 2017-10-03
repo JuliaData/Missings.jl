@@ -17,21 +17,10 @@ T(::Type{Any}) = Any
 
 Base.isnull(v::Null) = true
 
-Base.length(x::Null) = 1
-Base.size(x::Null) = ()
-Base.size(x::Null, i::Integer) = i < 1 ? throw(BoundsError()) : 1
-Base.ndims(x::Null) = 0
-Base.getindex(x::Null, i) = i == 1 ? null : throw(BoundsError())
-
 # vector constructors
 nulls(dims...) = fill(null, dims)
 nulls(::Type{T}, dims...) where {T >: Null} = fill!(Array{T}(dims), null)
 nulls(::Type{T}, dims...) where {T} = fill!(Array{Union{T, Null}}(dims), null)
-
-# Iteration rules modeled after that for numbers
-Base.start(::Null) = false
-Base.next(::Null, ::Bool) = (null, true)
-Base.done(::Null, b::Bool) = b
 
 Base.promote_rule(::Type{T}, ::Type{Null}) where {T} = Union{T, Null}
 Base.convert(::Type{Union{T, Null}}, x) where {T} = convert(T, x)
