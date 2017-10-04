@@ -125,4 +125,48 @@ using Base.Test, Nulls
     @test convert(Union{Int, Null}, 1.0) == 1
 
     @test Nulls.T(Any) == Any
+
+    # AbstractArray{>:Null}
+
+    @test isnull([1, null] == [1, null])
+    @test isnull(["a", null] == ["a", null])
+    @test isnull(Any[1, null] == Any[1, null])
+    @test isnull(Any[null] == Any[null])
+    @test isnull([null] == [null])
+    @test isnull(Any[null, 2] == Any[1, null])
+    @test isnull([null, false] == BitArray([true, false]))
+    @test isnull(Any[null, false] == BitArray([true, false]))
+    @test Union{Int, Null}[1] == Union{Float64, Null}[1.0]
+    @test Union{Int, Null}[1] == [1.0]
+    @test Union{Bool, Null}[true] == BitArray([true])
+    @test !(Union{Int, Null}[1] == [2])
+    @test !([1] == Union{Int, Null}[2])
+    @test !(Union{Int, Null}[1] == Union{Int, Null}[2])
+
+    @test isnull([1, null] != [1, null])
+    @test isnull(["a", null] != ["a", null])
+    @test isnull(Any[1, null] != Any[1, null])
+    @test isnull(Any[null] != Any[null])
+    @test isnull([null] != [null])
+    @test isnull(Any[null, 2] != Any[1, null])
+    @test isnull([null, false] != BitArray([true, false]))
+    @test isnull(Any[null, false] != BitArray([true, false]))
+    @test !(Union{Int, Null}[1] != Union{Float64, Null}[1.0])
+    @test !(Union{Int, Null}[1] != [1.0])
+    @test !(Union{Bool, Null}[true] != BitArray([true]))
+    @test Union{Int, Null}[1] != [2]
+    @test [1] != Union{Int, Null}[2]
+    @test Union{Int, Null}[1] != Union{Int, Null}[2]
+
+    @test any([true, null])
+    @test any(x -> x == 1, [1, null])
+    @test isnull(any([false, null]))
+    @test isnull(any(x -> x == 1, [2, null]))
+    @test isnull(all([true, null]))
+    @test isnull(all(x -> x == 1, [1, null]))
+    @test !all([false, null])
+    @test !all(x -> x == 1, [2, null])
+    @test 1 in [1, null]
+    @test isnull(2 in [1, null])
+    @test isnull(null in [1, null])
 end
