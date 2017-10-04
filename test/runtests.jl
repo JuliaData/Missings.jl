@@ -2,6 +2,24 @@ using Base.Test, Nulls
 
 @testset "Nulls" begin
 
+    # test promote rules
+    @test promote_type(Null, Null) == Null
+    @test promote_type(Null, Int) == Union{Null, Int}
+    @test promote_type(Int, Null) == Union{Null, Int}
+    @test promote_type(Int, Any) == Any
+    @test promote_type(Any, Any) == Any
+    @test promote_type(Null, Any) == Any
+    @test promote_type(Any, Null) == Any
+    @test promote_type(Union{Int, Null}, Null) == Union{Int, Null}
+    @test promote_type(Null, Union{Int, Null}) == Union{Int, Null}
+    @test promote_type(Union{Int, Null}, Int) == Union{Int, Null}
+    @test promote_type(Int, Union{Int, Null}) == Union{Int, Null}
+    @test promote_type(Any, Union{Int, Null}) == Any
+    @test promote_type(Union{Int, Null}, Union{Int, Null}) == Union{Int, Null}
+    @test promote_type(Union{Float64, Null}, Union{String, Null}) == Any
+    @test promote_type(Union{Float64, Null}, Union{Int, Null}) == Union{Float64, Null}
+    @test promote_type(Union{Void, Null, Int}, Float64) == Any
+
     bit_operators = [&, |, ⊻]
 
     arithmetic_operators = [+, -, *, /, ^, Base.div, Base.mod, Base.fld, Base.rem]
