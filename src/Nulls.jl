@@ -24,6 +24,11 @@ nulls(::Type{T}, dims...) where {T >: Null} = fill!(Array{T}(dims), null)
 nulls(::Type{T}, dims...) where {T} = fill!(Array{Union{T, Null}}(dims), null)
 
 Base.promote_rule(::Type{T}, ::Type{Null}) where {T} = Union{T, Null}
+Base.promote_rule(::Type{T}, ::Type{Union{S,Null}}) where {T,S} = Union{promote_type(T, S), Null}
+Base.promote_rule(::Type{T}, ::Type{Any}) where {T} = Any
+Base.promote_rule(::Type{Any}, ::Type{Null}) = Any
+Base.promote_rule(::Type{Null}, ::Type{Any}) = Any
+Base.promote_rule(::Type{Null}, ::Type{Null}) = Null
 Base.convert(::Type{Union{T, Null}}, x) where {T} = convert(T, x)
 
 # Comparison operators
