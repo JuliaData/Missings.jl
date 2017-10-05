@@ -61,7 +61,6 @@ for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
           :(Base.sin), :(Base.sinh), :(Base.cos), :(Base.cosh), :(Base.tan), :(Base.tanh),
           :(Base.exp), :(Base.exp2), :(Base.expm1), :(Base.log), :(Base.log10), :(Base.log1p),
           :(Base.log2), :(Base.exponent), :(Base.sqrt), :(Base.gamma), :(Base.lgamma),
-          :(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc),
           :(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Base.isodd),
           :(Base.isinteger), :(Base.isreal), :(Base.isimag), :(Base.isnan), :(Base.isempty),
           :(Base.iszero))
@@ -78,6 +77,14 @@ for f in (:(+), :(-), :(*), :(/), :(^),
         ($f)(::Null, ::Null) = null
         ($f)(d::Null, x::Number) = null
         ($f)(d::Number, x::Null) = null
+    end
+end
+
+# Rounding and related functions
+for f in (:(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc))
+    @eval begin
+        ($f)(::Null, digits::Integer=0, base::Integer=0) = null
+        ($f)(::Type, ::Null) = null
     end
 end
 

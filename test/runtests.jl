@@ -27,7 +27,6 @@ using Base.Test, Nulls
     elementary_functions = [abs, abs2, sign,
                             acos, acosh, asin, asinh, atan, atanh, sin, sinh,
                             conj, cos, cosh, tan, tanh,
-                            ceil, floor, round, trunc,
                             exp, exp2, expm1, log, log10, log1p, log2,
                             exponent, sqrt, gamma, lgamma,
                             identity, zero,
@@ -35,6 +34,8 @@ using Base.Test, Nulls
                             isfinite, isinf, isnan, iszero,
                             isinteger, isreal, isimag,
                             isempty]
+
+    rounding_functions = [ceil, floor, round, trunc]
 
     # All unary operators return null when evaluating null
     for f in [!, +, -]
@@ -44,6 +45,14 @@ using Base.Test, Nulls
     # All elementary functions return null when evaluating null
     for f in elementary_functions
         @test isnull(f(null))
+    end
+
+    # All rounding functions return null when evaluating null as first argument
+    for f in rounding_functions
+        @test isnull(f(null))
+        @test isnull(f(null, 1))
+        @test isnull(f(null, 1, 1))
+        @test isnull(f(Int, null))
     end
 
     @test zero(Union{Int, Null}) === 0
