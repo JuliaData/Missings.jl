@@ -63,7 +63,7 @@ for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
           :(Base.log2), :(Base.exponent), :(Base.sqrt), :(Base.gamma), :(Base.lgamma),
           :(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Base.isodd),
           :(Base.isinteger), :(Base.isreal), :(Base.isimag), :(Base.isnan), :(Base.isempty),
-          :(Base.iszero))
+          :(Base.iszero), :(Base.transpose), :(Base.ctranspose))
     @eval $(f)(d::Null) = null
 end
 
@@ -84,7 +84,8 @@ end
 for f in (:(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc))
     @eval begin
         ($f)(::Null, digits::Integer=0, base::Integer=0) = null
-        ($f)(::Type, ::Null) = null
+        ($f)(::Type{>:Null}, ::Null) = null
+        ($f)(::Type, ::Null) = throw(NullException())
     end
 end
 

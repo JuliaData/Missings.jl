@@ -33,7 +33,7 @@ using Base.Test, Nulls
                             iseven, isodd, ispow2,
                             isfinite, isinf, isnan, iszero,
                             isinteger, isreal, isimag,
-                            isempty]
+                            isempty, transpose, ctranspose]
 
     rounding_functions = [ceil, floor, round, trunc]
 
@@ -52,7 +52,8 @@ using Base.Test, Nulls
         @test isnull(f(null))
         @test isnull(f(null, 1))
         @test isnull(f(null, 1, 1))
-        @test isnull(f(Int, null))
+        @test isnull(f(Union{Int, Null}, null))
+        @test_throws NullException f(Int, null)
     end
 
     @test zero(Union{Int, Null}) === 0
