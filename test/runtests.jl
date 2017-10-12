@@ -118,6 +118,9 @@ using Base.Test, Nulls
     @test isnull(xor(null, 1))
     @test isnull(xor(1, null))
 
+    @test isnull("a" * null)
+    @test isnull(null * "a")
+
     @test sprint(show, null) == "null"
 
     @test collect(Nulls.replace([1, 2, null, 4], 3)) == collect(1:4)
