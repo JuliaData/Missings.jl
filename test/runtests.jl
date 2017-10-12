@@ -131,6 +131,17 @@ using Base.Test, Nulls
     # Fails in Julia 0.6 and 0.7.0-DEV.1556
     @test_broken Nulls.coalesce.([null, 1, null], [0, null, null]) isa Vector{Union{Null, Int}}
 
+    @test levels(1:1) == levels([1]) == levels([1, null]) == levels([null, 1]) == [1]
+    @test levels(2:-1:1) == levels([2, 1]) == levels([2, null, 1]) == [1, 2]
+    @test levels([null, "a", "c", null, "b"]) == ["a", "b", "c"]
+    @test levels([Complex(0, 1), Complex(1, 0), null]) == [Complex(0, 1), Complex(1, 0)]
+    @test levels(sparse([0 3 2])) == [0, 2, 3]
+    @test typeof(levels([1])) === typeof(levels([1, null])) === Vector{Int}
+    @test typeof(levels(["a"])) === typeof(levels(["a", null])) === Vector{String}
+    @test typeof(levels(sparse([1]))) === Vector{Int}
+    @test isempty(levels([null]))
+    @test isempty(levels([]))
+
     x = convert(Vector{Union{Int, Null}}, [1.0, null])
     @test isa(x, Vector{Union{Int, Null}})
     @test isequal(x, [1, null])
