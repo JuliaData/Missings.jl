@@ -67,7 +67,7 @@ for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
     @eval $(f)(d::Null) = null
 end
 
-Base.zero(::Type{Union{T, Null}}) where {T} = zero(T)
+Base.zero(::Type{Union{T, Null}}) where {T <: Number} = zero(T)
 
 # Binary operators/functions
 for f in (:(+), :(-), :(*), :(/), :(^),
