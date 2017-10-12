@@ -68,6 +68,7 @@ for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
 end
 
 Base.zero(::Type{Union{T, Null}}) where {T <: Number} = zero(T)
+Base.zero(::Type{Union{T, Null}}) where {T <: Base.Dates.Period} = zero(T)
 
 # Binary operators/functions
 for f in (:(+), :(-), :(*), :(/), :(^),

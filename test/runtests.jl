@@ -59,6 +59,11 @@ using Base.Test, Nulls
     @test zero(Union{Int, Null}) === 0
     @test zero(Union{Float64, Null}) === 0.0
 
+    for T in (subtypes(Dates.DatePeriod)...,
+              subtypes(Dates.TimePeriod)...)
+        @test zero(Union{T, Null}) === T(0)
+    end
+
     # Comparison operators
     @test (null == null) === null
     @test (1 == null) === null
