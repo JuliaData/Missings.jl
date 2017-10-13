@@ -150,6 +150,8 @@ using Base.Test, Nulls
     @test isequal(x, [null])
 
     @test Nulls.T(Union{Int, Null}) == Int
+    @test Nulls.T(Any) == Any
+    @test Nulls.T(Null) == Union{}
 
     @test isequal(nulls(1), [null])
     @test isequal(nulls(Int, 1), [null])
@@ -159,8 +161,6 @@ using Base.Test, Nulls
     @test Union{Int, Null}[1,2,3] == (Union{Int, Null})[1,2,3]
 
     @test convert(Union{Int, Null}, 1.0) == 1
-
-    @test Nulls.T(Any) == Any
 
     # AbstractArray{>:Null}
 

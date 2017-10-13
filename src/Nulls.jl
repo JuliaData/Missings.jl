@@ -13,6 +13,7 @@ const null = Null()
 Base.show(io::IO, x::Null) = print(io, "null")
 
 T(::Type{Union{T1, Null}}) where {T1} = T1
+T(::Type{Null}) = Union{}
 T(::Type{T1}) where {T1} = T1
 T(::Type{Any}) = Any
 
