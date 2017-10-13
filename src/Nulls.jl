@@ -68,6 +68,7 @@ for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
 end
 
 Base.zero(::Type{Union{T, Null}}) where {T <: Number} = zero(T)
+Base.zero(::Type{Union{T, Null}}) where {T <: Base.Dates.Period} = zero(T)
 
 # Binary operators/functions
 for f in (:(+), :(-), :(*), :(/), :(^),
@@ -108,6 +109,10 @@ xor(a::Null, b::Bool) = null
 xor(b::Bool, a::Null) = null
 xor(::Null, ::Integer) = null
 xor(::Integer, ::Null) = null
+
+# String functions
+*(d::Null, x::AbstractString) = null
+*(d::AbstractString, x::Null) = null
 
 replace(itr, x) = (ifelse(v !== null, v, x) for v in itr)
 skip(itr) = (v for v in itr if v !== null)
