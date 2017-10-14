@@ -211,4 +211,11 @@ function Base.all(f, A::AbstractArray{>:Null})
     return anynull ? null : true
 end
 
+function Base.float(A::AbstractArray{Union{T, Null}}) where {T}
+    U = typeof(float(zero(T)))
+    convert(AbstractArray{Union{U, Null}}, A)
+end
+
+Base.float(A::AbstractArray{Null}) = throw(NullException())
+
 end # module

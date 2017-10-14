@@ -205,4 +205,12 @@ using Base.Test, Nulls
     @test 1 in [1, null]
     @test isnull(2 in [1, null])
     @test isnull(null in [1, null])
+
+    @test isequal(float([1, null]), [1, null])
+    @test float([1, null]) isa Vector{Union{Float64, Null}}
+    @test isequal(float(Union{Int, Null}[null]), [null])
+    @test float(Union{Int, Null}[null]) isa Vector{Union{Float64, Null}}
+    @test float(Union{Int, Null}[1]) == [1]
+    @test float(Union{Int, Null}[1]) isa Vector{Union{Float64, Null}}
+    @test_throws NullException float([null])
 end
