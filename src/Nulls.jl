@@ -4,7 +4,7 @@ module Nulls
 import Base: *, <, ==, !=, <=, !, +, -, ^, /, &, |, xor
 using Compat: AbstractRange
 
-export null, nulls, Null
+export null, nulls, Null, levels
 
 struct Null end
 
@@ -155,6 +155,25 @@ julia> coalesce.([null, 1, null], [0, 10, 5])
 """
 coalesce(x) = x
 coalesce(x, y...) = ifelse(x !== null, x, coalesce(y...))
+
+"""
+    levels(x)
+
+Return a vector of unique values which occur or could occur in collection `x`,
+omitting `null` even if present. Values are returned in the preferred order
+for the collection, with the result of [`sort`](@ref) as a default.
+
+Contrary to [`unique`](@ref), this function may return values which do not
+actually occur in the data, and does not preserve their order of appearance in `x`.
+"""
+function levels(x)
+    T = Nulls.T(eltype(x))
+    levs = convert(AbstractArray{T}, filter!(!isnull, unique(x)))
+    if method_exists(isless, Tuple{T, T})
+        try; sort!(levs); end
+    end
+    levs
+end
 
 # AbstractArray{>:Null} functions
 
