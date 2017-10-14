@@ -64,7 +64,7 @@ for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
           :(Base.log2), :(Base.exponent), :(Base.sqrt), :(Base.gamma), :(Base.lgamma),
           :(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Base.isodd),
           :(Base.isinteger), :(Base.isreal), :(Base.isimag), :(Base.isnan), :(Base.isempty),
-          :(Base.iszero), :(Base.transpose), :(Base.ctranspose))
+          :(Base.iszero), :(Base.transpose), :(Base.ctranspose), :(Base.float))
     @eval $(f)(d::Null) = null
 end
 
@@ -215,7 +215,6 @@ function Base.float(A::AbstractArray{Union{T, Null}}) where {T}
     U = typeof(float(zero(T)))
     convert(AbstractArray{Union{U, Null}}, A)
 end
-
-Base.float(A::AbstractArray{Null}) = throw(NullException())
+Base.float(A::AbstractArray{Null}) = A
 
 end # module
