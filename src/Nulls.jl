@@ -121,6 +121,8 @@ xor(::Integer, ::Null) = null
 
 Return an iterator wrapping iterable `itr` which replaces [`null`](@ref) values with
 `replacement`. When applicable, the size of `itr` is preserved.
+If the type of `replacement` differs from the element type of `itr`,
+it will be converted.
 
 See also: [`Nulls.skip`](@ref), [`Nulls.fail`](@ref)
 
@@ -139,7 +141,7 @@ julia> collect(Nulls.replace([1 null; 2 null], 0))
 
 ```
 """
-replace(itr, replacement) = EachReplaceNull(itr, replacement)
+replace(itr, replacement) = EachReplaceNull(itr, convert(eltype(itr), replacement))
 struct EachReplaceNull{T, U}
     x::T
     replacement::U
@@ -152,8 +154,7 @@ Base.length(itr::EachReplaceNull) = length(itr.x)
 Base.size(itr::EachReplaceNull) = size(itr.x)
 Base.start(itr::EachReplaceNull) = start(itr.x)
 Base.done(itr::EachReplaceNull, state) = done(itr.x, state)
-Base.eltype(itr::EachReplaceNull) =
-    Union{Nulls.T(eltype(itr.x)), typeof(itr.replacement)}
+Base.eltype(itr::EachReplaceNull) = Nulls.T(eltype(itr.x))
 @inline function Base.next(itr::EachReplaceNull, state)
     v, s = next(itr.x, state)
     ((isnull(v) ? itr.replacement : v)::eltype(itr), s)

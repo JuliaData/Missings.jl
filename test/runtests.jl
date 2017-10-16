@@ -129,6 +129,12 @@ using Base.Test, Nulls
     @test size(x) == (4,)
     @test collect(x) == collect(1:4)
     @test collect(x) isa Vector{Int}
+    x = Nulls.replace([1, 2, null, 4], 3.0)
+    @test eltype(x) === Int
+    @test length(x) == 4
+    @test size(x) == (4,)
+    @test collect(x) == collect(1:4)
+    @test collect(x) isa Vector{Int}
     x = Nulls.replace([1 2; null 4], 3)
     @test eltype(x) === Int
     @test length(x) == 4
