@@ -33,7 +33,7 @@ using Base.Test, Nulls
                             iseven, isodd, ispow2,
                             isfinite, isinf, isnan, iszero,
                             isinteger, isreal, isimag,
-                            isempty, transpose, ctranspose]
+                            isempty, transpose, ctranspose, float]
 
     rounding_functions = [ceil, floor, round, trunc]
 
@@ -216,4 +216,13 @@ using Base.Test, Nulls
     @test 1 in [1, null]
     @test isnull(2 in [1, null])
     @test isnull(null in [1, null])
+
+    @test isequal(float([1, null]), [1, null])
+    @test float([1, null]) isa Vector{Union{Float64, Null}}
+    @test isequal(float(Union{Int, Null}[null]), [null])
+    @test float(Union{Int, Null}[null]) isa Vector{Union{Float64, Null}}
+    @test float(Union{Int, Null}[1]) == [1]
+    @test float(Union{Int, Null}[1]) isa Vector{Union{Float64, Null}}
+    @test isequal(float([null]), [null])
+    @test float([null]) isa Vector{Null}
 end
