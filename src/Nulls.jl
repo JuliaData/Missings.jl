@@ -157,7 +157,7 @@ Base.done(itr::EachReplaceNull, state) = done(itr.x, state)
 Base.eltype(itr::EachReplaceNull) = Nulls.T(eltype(itr.x))
 @inline function Base.next(itr::EachReplaceNull, state)
     v, s = next(itr.x, state)
-    ((isnull(v) ? itr.replacement : v)::eltype(itr), s)
+    (v isa Null ? itr.replacement : v, s)
 end
 
 """
@@ -203,7 +203,7 @@ Base.eltype(itr::EachSkipNull) = Nulls.T(eltype(itr.x))
 @inline function Base.start(itr::EachSkipNull)
     s = start(itr.x)
     v = null
-    @inbounds while !done(itr.x, s) && isnull(v)
+    @inbounds while !done(itr.x, s) && v isa Null
         v, s = next(itr.x, s)
     end
     (v, s)
@@ -212,10 +212,10 @@ end
 @inline function Base.next(itr::EachSkipNull, state)
     v1, s = state
     v2 = null
-    @inbounds while !done(itr.x, s) && isnull(v2)
+    @inbounds while !done(itr.x, s) && v2 isa Null
         v2, s = next(itr.x, s)
     end
-    (v1::eltype(itr), (v2, s))
+    (v1, (v2, s))
 end
 # Optimized implementation for AbstractArray, relying on the ability to access x[i] twice:
 # once in done() to find the next non-null entry, and once in next() to return it.
@@ -224,7 +224,7 @@ end
     idx = eachindex(x)
     @inbounds while !done(idx, s)
         i, new_s = next(idx, s)
-        isnull(x[i]) || break
+        x[i] isa Null || break
         s = new_s
     end
     s
@@ -277,6 +277,7 @@ Base.done(itr::EachFailNull, state) = done(itr.x, state)
 Base.eltype(itr::EachFailNull) = Nulls.T(eltype(itr.x))
 @inline function Base.next(itr::EachFailNull, state)
     v, s = next(itr.x, state)
+    # NOTE: v isa Null currently gives incorrect code, cf. JuliaLang/julia#24177
     isnull(v) && throw(NullException())
     (v::eltype(itr), s)
 end
