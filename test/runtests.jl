@@ -123,10 +123,75 @@ using Base.Test, Nulls
 
     @test sprint(show, null) == "null"
 
-    @test collect(Nulls.replace([1, 2, null, 4], 3)) == collect(1:4)
-    @test collect(Nulls.skip([1, 2, null, 4])) == [1, 2, 4]
-    @test collect(Nulls.fail([1, 2, 3, 4])) == [1, 2, 3, 4]
+    x = Nulls.replace([1, 2, null, 4], 3)
+    @test eltype(x) === Int
+    @test length(x) == 4
+    @test size(x) == (4,)
+    @test collect(x) == collect(1:4)
+    @test collect(x) isa Vector{Int}
+    x = Nulls.replace([1, 2, null, 4], 3.0)
+    @test eltype(x) === Int
+    @test length(x) == 4
+    @test size(x) == (4,)
+    @test collect(x) == collect(1:4)
+    @test collect(x) isa Vector{Int}
+    x = Nulls.replace([1 2; null 4], 3)
+    @test eltype(x) === Int
+    @test length(x) == 4
+    @test size(x) == (2, 2)
+    @test collect(x) == [1 2; 3 4]
+    @test collect(x) isa Matrix{Int}
+    x = Nulls.replace((v for v in [null, 1, null, 2, 4]), 0)
+    @test length(x) == 5
+    @test size(x) == (5,)
+    @test eltype(x) === Any
+    @test collect(x) == [0, 1, 0, 2, 4]
+    @test collect(x) isa Vector{Int}
+
+    x = Nulls.fail([1, 2, 3, 4])
+    @test eltype(x) === Int
+    @test length(x) == 4
+    @test size(x) == (4,)
+    @test collect(x) == [1, 2, 3, 4]
+    @test collect(x) isa Vector{Int}
+    x = Nulls.fail([1 2; 3 4])
+    @test eltype(x) === Int
+    @test length(x) == 4
+    @test size(x) == (2, 2)
+    @test collect(x) == [1 2; 3 4]
+    @test collect(x) isa Matrix{Int}
     @test_throws NullException collect(Nulls.fail([1, 2, null, 4]))
+    x = Nulls.fail(v for v in [1, 2, 4])
+    @test eltype(x) === Any
+    @test length(x) == 3
+    @test size(x) == (3,)
+    @test collect(x) == [1, 2, 4]
+    @test collect(x) isa Vector{Int}
+
+    x = Nulls.skip([1, 2, null, 4])
+    @test eltype(x) === Int
+    @test collect(x) == [1, 2, 4]
+    @test collect(x) isa Vector{Int}
+    x = Nulls.skip([1  2; null 4])
+    @test eltype(x) === Int
+    @test collect(x) == [1, 2, 4]
+    @test collect(x) isa Vector{Int}
+    x = collect(Nulls.skip([null]))
+    @test eltype(x) === Union{}
+    @test isempty(collect(x))
+    @test collect(x) isa Vector{Union{}}
+    x = collect(Nulls.skip(Union{Int, Null}[]))
+    @test eltype(x) === Int
+    @test isempty(collect(x))
+    @test collect(x) isa Vector{Int}
+    x = Nulls.skip([null, null, 1, 2, null, 4, null, null])
+    @test eltype(x) === Int
+    @test collect(x) == [1, 2, 4]
+    @test collect(x) isa Vector{Int}
+    x = Nulls.skip(v for v in [null, 1, null, 2, 4])
+    @test eltype(x) === Any
+    @test collect(x) == [1, 2, 4]
+    @test collect(x) isa Vector{Int}
 
     @test Nulls.coalesce(null, 1) === 1
     @test Nulls.coalesce(1, null) === 1
