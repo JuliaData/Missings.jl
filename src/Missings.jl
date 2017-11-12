@@ -4,13 +4,38 @@ module Missings
 import Base: *, <, ==, !=, <=, !, +, -, ^, /, &, |, xor
 using Compat: AbstractRange
 
-export ismissing, missing, missings, Missing, MissingException, levels
+export ismissing, missing, missings, Missing, MissingException, levels, ⯑
 
+"""
+    Missing
+
+A type with no fields whose singleton instance [`missing`](@ref) is used
+to represent missing values.
+"""
 struct Missing end
 
+"""
+    missing
+
+The singleton instance of type [`Missing`](@ref) representing a missing value.
+Also printed as `⯑` in some contexts.
+"""
 const missing = Missing()
 
-Base.show(io::IO, x::Missing) = print(io, "missing")
+"""
+    ⯑
+
+Compact representation of [`missing`](@ref), denoting a missing value.
+"""
+const ⯑ = missing
+
+function Base.show(io::IO, x::Missing)
+    if get(io, :compact, false)
+        print(io, "⯑")
+    else
+        print(io, "missing")
+    end
+end
 
 """
     MissingException(msg)
