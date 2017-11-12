@@ -10,9 +10,21 @@ struct Missing end
 
 const missing = Missing()
 
-struct MissingException <: Exception end
-
 Base.show(io::IO, x::Missing) = print(io, "missing")
+
+"""
+    MissingException(msg)
+
+Exception thrown when a [`missing`](@ref) value is encountered in a situation
+where it is not supported. The error message, in the `msg` field
+may provide more specific details.
+"""
+struct MissingException <: Exception
+    msg::AbstractString
+end
+
+Base.showerror(io::IO, ex::MissingException) =
+    print(io, "MissingException: ", ex.msg)
 
 T(::Type{Union{T1, Missing}}) where {T1} = T1
 T(::Type{Missing}) = Union{}
@@ -91,7 +103,8 @@ for f in (:(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc))
     @eval begin
         ($f)(::Missing, digits::Integer=0, base::Integer=0) = missing
         ($f)(::Type{>:Missing}, ::Missing) = missing
-        ($f)(::Type, ::Missing) = throw(MissingException())
+        ($f)(::Type{T}, ::Missing) where {T} =
+            throw(MissingException("cannot convert a missing value to type $T"))
     end
 end
 
@@ -262,7 +275,7 @@ julia> collect(Missings.fail([1 2; 3 4]))
  3  4
 
 julia> collect(Missings.fail([1, missing, 2]))
-ERROR: MissingException()
+ERROR: MissingException: missing value encountered by Missings.fail
 [...]
 ```
 """
@@ -282,7 +295,7 @@ Base.eltype(itr::EachFailMissing) = Missings.T(eltype(itr.x))
 @inline function Base.next(itr::EachFailMissing, state)
     v, s = next(itr.x, state)
     # NOTE: v isa Missing currently gives incorrect code, cf. JuliaLang/julia#24177
-    ismissing(v) && throw(MissingException())
+    ismissing(v) && throw(MissingException("missing value encountered by Missings.fail"))
     (v::eltype(itr), s)
 end
 

@@ -290,4 +290,7 @@ using Base.Test, Missings
     @test float(Union{Int, Missing}[1]) isa Vector{Union{Float64, Missing}}
     @test isequal(float([missing]), [missing])
     @test float([missing]) isa Vector{Missing}
+
+    # MissingException
+    @test sprint(showerror, MissingException("test")) == "MissingException: test"
 end
