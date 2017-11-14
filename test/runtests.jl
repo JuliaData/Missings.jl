@@ -1,8 +1,6 @@
 using Base.Test, Missings
 
 @testset "Missings" begin
-    @test missing === ⯑ === Missing()
-
     # test promote rules
     @test promote_type(Missing, Missing) == Missing
     @test promote_type(Missing, Int) == Union{Missing, Int}
@@ -123,21 +121,15 @@ using Base.Test, Missings
     @test ismissing(missing * "a")
 
     @test sprint(show, missing) == "missing"
-    @test sprint(showcompact, missing) == "⯑"
-    @test sprint(showcompact, ⯑) == "⯑"
-    @test sprint(show, ⯑) == "missing"
-    @test sprint(show, [missing]) == "$Missing[⯑]"
-    @test sprint(show, [1 missing]) == "$(Union{Int, Missing})[1 ⯑]"
+    @test sprint(showcompact, missing) == "missing"
+    @test sprint(show, [missing]) == "$Missing[missing]"
+    @test sprint(show, [1 missing]) == "$(Union{Int, Missing})[1 missing]"
     b = IOBuffer()
     display(TextDisplay(b), [missing])
-    if VERSION < v"0.7.0-DEV.1217" # JuliaLang/julia#22981
-        @test String(take!(b)) == "1-element Array{$Missing,1}:\n ⯑"
-    else
-        @test String(take!(b)) == "1-element Array{$Missing,1}:\n missing"
-    end
+    @test String(take!(b)) == "1-element Array{$Missing,1}:\n missing"
     b = IOBuffer()
     display(TextDisplay(b), [1 missing])
-    @test String(take!(b)) == "1×2 Array{$(Union{Int, Missing}),2}:\n 1  ⯑"
+    @test String(take!(b)) == "1×2 Array{$(Union{Int, Missing}),2}:\n 1  missing"
 
     x = Missings.replace([1, 2, missing, 4], 3)
     @test eltype(x) === Int

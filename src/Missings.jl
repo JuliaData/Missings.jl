@@ -22,20 +22,7 @@ Also printed as `⯑` in some contexts.
 """
 const missing = Missing()
 
-"""
-    ⯑
-
-Compact representation of [`missing`](@ref), denoting a missing value.
-"""
-const ⯑ = missing
-
-function Base.show(io::IO, x::Missing)
-    if get(io, :compact, false)
-        print(io, "⯑")
-    else
-        print(io, "missing")
-    end
-end
+Base.show(io::IO, x::Missing) = print(io, "missing")
 
 """
     MissingException(msg)
