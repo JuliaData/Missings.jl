@@ -4,7 +4,7 @@ module Missings
 import Base: *, <, ==, !=, <=, !, +, -, ^, /, &, |, xor
 using Compat: AbstractRange
 
-export ismissing, missing, missings, Missing, MissingException, levels, ⯑
+export ismissing, missing, missings, Missing, MissingException, levels
 
 """
     Missing
@@ -18,7 +18,6 @@ struct Missing end
     missing
 
 The singleton instance of type [`Missing`](@ref) representing a missing value.
-Also printed as `⯑` in some contexts.
 """
 const missing = Missing()
 
