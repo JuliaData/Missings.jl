@@ -4,7 +4,7 @@ module Missings
 import Base: *, <, ==, !=, <=, !, +, -, ^, /, &, |, xor
 using Compat: AbstractRange
 
-export ismissing, missing, missings, Missing, MissingException, levels
+export ismissing, missing, missings, Missing, MissingException, levels, skipmissing
 
 """
     Missing
@@ -152,7 +152,7 @@ Return an iterator wrapping iterable `itr` which replaces [`missing`](@ref) valu
 If the type of `replacement` differs from the element type of `itr`,
 it will be converted.
 
-See also: [`Missings.skip`](@ref), [`Missings.fail`](@ref)
+See also: [`skipmissing`](@ref), [`Missings.fail`](@ref)
 
 # Examples
 ```jldoctest
@@ -189,7 +189,7 @@ Base.eltype(itr::EachReplaceMissing) = Missings.T(eltype(itr.x))
 end
 
 """
-    Missings.skip(itr)
+    skipmissing(itr)
 
 Return an iterator wrapping iterable `itr` which skips [`missing`](@ref) values.
 
@@ -198,23 +198,22 @@ Use [`collect`](@ref) to obtain an `Array` containing the non-`missing` values i
 be a `Vector` since it is not possible to remove missings while preserving dimensions
 of the input.
 
-See also: [`Missings.replace`](@ref), [`Missings.fail`](@ref)
-
 # Examples
 ```jldoctest
-julia> collect(Missings.skip([1, missing, 2]))
+julia> collect(skipmissing([1, missing, 2]))
 2-element Array{Int64,1}:
  1
  2
 
-julia> collect(Missings.skip([1 missing; 2 missing]))
+julia> collect(skipmissing([1 missing; 2 missing]))
 2-element Array{Int64,1}:
  1
  2
 
 ```
 """
-skip(itr) = EachSkipMissing(itr)
+skipmissing(itr) = EachSkipMissing(itr)
+
 struct EachSkipMissing{T}
     x::T
 end
@@ -276,7 +275,7 @@ if a [`missing`](@ref) value is found.
 Use [`collect`](@ref) to obtain an `Array` containing the resulting values.
 If `itr` is an array, the resulting array will have the same dimensions.
 
-See also: [`Missings.skip`](@ref), [`Missings.replace`](@ref)
+See also: [`skipmissing`](@ref), [`Missings.replace`](@ref)
 
 # Examples
 ```jldoctest
@@ -426,5 +425,8 @@ function Base.float(A::AbstractArray{Union{T, Missing}}) where {T}
     convert(AbstractArray{Union{U, Missing}}, A)
 end
 Base.float(A::AbstractArray{Missing}) = A
+
+# Deprecations
+@deprecate skip(itr) skipmissing(itr)
 
 end # module
