@@ -2,7 +2,7 @@ __precompile__(true)
 module Missings
 
 import Base: *, <, ==, !=, <=, !, +, -, ^, /, &, |, xor
-using Compat, Compat.Dates
+using Compat
 
 export ismissing, missing, missings, Missing, MissingException, levels, skipmissing
 
@@ -96,7 +96,7 @@ for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
 end
 
 Base.zero(::Type{Union{T, Missing}}) where {T <: Number} = zero(T)
-Base.zero(::Type{Union{T, Missing}}) where {T <: Base.Dates.Period} = zero(T)
+Base.zero(::Type{Union{T, Missing}}) where {T <: Compat.Dates.Period} = zero(T)
 
 # Binary operators/functions
 for f in (:(+), :(-), :(*), :(/), :(^),
