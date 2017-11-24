@@ -2,7 +2,7 @@ __precompile__(true)
 module Missings
 
 import Base: *, <, ==, !=, <=, !, +, -, ^, /, &, |, xor
-using Compat
+using Compat, Compat.Dates
 
 export ismissing, missing, missings, Missing, MissingException, levels, skipmissing
 
