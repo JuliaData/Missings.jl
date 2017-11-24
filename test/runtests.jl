@@ -1,4 +1,4 @@
-using Base.Test, Missings
+using Base.Test, Missings, Compat
 
 @testset "Missings" begin
     # test promote rules
