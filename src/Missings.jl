@@ -427,6 +427,6 @@ end
 Base.float(A::AbstractArray{Missing}) = A
 
 # Deprecations
-@deprecate skip(itr) skipmissing(itr)
+@deprecate skip(itr) skipmissing(itr) false
 
 end # module
