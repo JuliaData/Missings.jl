@@ -2,10 +2,7 @@ __precompile__(true)
 module Missings
 
 import Base: *, <, ==, !=, <=, !, +, -, ^, /, &, |, xor
-if VERSION >= v"0.7.0-DEV.2575"
-    import Dates
-end
-using Compat: AbstractRange
+using Compat
 
 export ismissing, missing, missings, Missing, MissingException, levels, skipmissing
 
