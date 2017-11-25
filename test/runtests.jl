@@ -1,4 +1,4 @@
-using Base.Test, Missings
+using Base.Test, Missings, Compat
 
 @testset "Missings" begin
     # test promote rules
@@ -58,8 +58,8 @@ using Base.Test, Missings
     @test zero(Union{Int, Missing}) === 0
     @test zero(Union{Float64, Missing}) === 0.0
 
-    for T in (subtypes(Dates.DatePeriod)...,
-              subtypes(Dates.TimePeriod)...)
+    for T in (subtypes(Compat.Dates.DatePeriod)...,
+              subtypes(Compat.Dates.TimePeriod)...)
         @test zero(Union{T, Missing}) === T(0)
     end
 

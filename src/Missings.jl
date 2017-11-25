@@ -96,7 +96,7 @@ for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
 end
 
 Base.zero(::Type{Union{T, Missing}}) where {T <: Number} = zero(T)
-Base.zero(::Type{Union{T, Missing}}) where {T <: Base.Dates.Period} = zero(T)
+Base.zero(::Type{Union{T, Missing}}) where {T <: Compat.Dates.Period} = zero(T)
 
 # Binary operators/functions
 for f in (:(+), :(-), :(*), :(/), :(^),
