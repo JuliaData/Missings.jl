@@ -68,6 +68,11 @@ using Base.Test, Missings, Compat
         @test oneunit(Union{T, Missing}) === T(1)
     end
 
+    # Make sure we didn't introduce a StackOverflow error
+    @test_throws MethodError zero(Any)
+    @test_throws MethodError one(Any)
+    @test_throws MethodError oneunit(Any)
+
     # Comparison operators
     @test (missing == missing) === missing
     @test (1 == missing) === missing

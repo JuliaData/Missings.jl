@@ -95,9 +95,12 @@ for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero), :(Base.one), :(Base.
     @eval $(f)(d::Missing) = missing
 end
 
-Base.zero(::Type{Union{T, Missing}}) where T = zero(T)
-Base.one(::Type{Union{T, Missing}}) where T = one(T)
-Base.oneunit(::Type{Union{T, Missing}}) where T = oneunit(T)
+for f in (:(Base.zero), :(Base.one), :(Base.oneunit))
+    @eval function $(f)(::Type{Union{T, Missing}}) where T
+        T === Any && throw(MethodError($f, (Any,)))
+        $f(T)
+    end
+end
 
 # Binary operators/functions
 for f in (:(+), :(-), :(*), :(/), :(^),
