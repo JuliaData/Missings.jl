@@ -83,7 +83,7 @@ if VERSION < v"0.7.0-DEV.300"
 end
 
 # Unary operators/functions
-for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
+for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero), :(Base.one), :(Base.oneunit),
           :(Base.abs), :(Base.abs2), :(Base.sign),
           :(Base.acos), :(Base.acosh), :(Base.asin), :(Base.asinh), :(Base.atan), :(Base.atanh),
           :(Base.sin), :(Base.sinh), :(Base.cos), :(Base.cosh), :(Base.tan), :(Base.tanh),
@@ -95,8 +95,12 @@ for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero),
     @eval $(f)(d::Missing) = missing
 end
 
-Base.zero(::Type{Union{T, Missing}}) where {T <: Number} = zero(T)
-Base.zero(::Type{Union{T, Missing}}) where {T <: Compat.Dates.Period} = zero(T)
+for f in (:(Base.zero), :(Base.one), :(Base.oneunit))
+    @eval function $(f)(::Type{Union{T, Missing}}) where T
+        T === Any && throw(MethodError($f, (Any,)))
+        $f(T)
+    end
+end
 
 # Binary operators/functions
 for f in (:(+), :(-), :(*), :(/), :(^),

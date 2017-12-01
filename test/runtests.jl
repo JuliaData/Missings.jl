@@ -28,7 +28,7 @@ using Base.Test, Missings, Compat
                             conj, cos, cosh, tan, tanh,
                             exp, exp2, expm1, log, log10, log1p, log2,
                             exponent, sqrt, gamma, lgamma,
-                            identity, zero,
+                            identity, zero, one, oneunit,
                             iseven, isodd, ispow2,
                             isfinite, isinf, isnan, iszero,
                             isinteger, isreal, isimag,
@@ -55,13 +55,23 @@ using Base.Test, Missings, Compat
         @test_throws MissingException f(Int, missing)
     end
 
-    @test zero(Union{Int, Missing}) === 0
-    @test zero(Union{Float64, Missing}) === 0.0
+    for T in (Int, Float64)
+        @test zero(Union{T, Missing}) === T(0)
+        @test one(Union{T, Missing}) === T(1)
+        @test oneunit(Union{T, Missing}) === T(1)
+    end
 
     for T in (subtypes(Compat.Dates.DatePeriod)...,
               subtypes(Compat.Dates.TimePeriod)...)
         @test zero(Union{T, Missing}) === T(0)
+        @test one(Union{T, Missing}) === 1
+        @test oneunit(Union{T, Missing}) === T(1)
     end
+
+    # Make sure we didn't introduce a StackOverflow error
+    @test_throws MethodError zero(Any)
+    @test_throws MethodError one(Any)
+    @test_throws MethodError oneunit(Any)
 
     # Comparison operators
     @test (missing == missing) === missing
