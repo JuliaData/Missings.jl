@@ -4,7 +4,8 @@ module Missings
 import Base: *, <, ==, !=, <=, !, +, -, ^, /, &, |, xor
 using Compat
 
-export ismissing, missing, missings, Missing, MissingException, levels, skipmissing
+export allowmissing, disallowmissing, ismissing, missing, missings,
+       Missing, MissingException, levels, skipmissing
 
 """
     Missing
@@ -49,6 +50,31 @@ ismissing(::Missing) = true
 missings(dims...) = fill(missing, dims)
 missings(::Type{T}, dims...) where {T >: Missing} = fill!(Array{T}(dims), missing)
 missings(::Type{T}, dims...) where {T} = fill!(Array{Union{T, Missing}}(dims), missing)
+
+"""
+    allowmissing(x::AbstractArray)
+
+Return an array equal to `x` allowing for [`missing`](@ref) values,
+i.e. with an element type equal to `Union{eltype(x), Missing}`.
+
+When possible, the result will share memory with `x` (as with [`convert`](@ref)).
+
+See also: [`disallowmissing`](@ref)
+"""
+allowmissing(x::AbstractVector{T}) where {T} = convert(AbstractArray{Union{T, Missing}}, x)
+
+"""
+    disallowmissing(x::AbstractArray)
+
+Return an array equal to `x` not allowing for [`missing`](@ref) values,
+i.e. with an element type equal to `Missings.T(eltype(x))`.
+
+When possible, the result will share memory with `x` (as with [`convert`](@ref)).
+If `x` contains missing values, a `MethodError` is thrown.
+
+See also: [`allowmissing`](@ref)
+"""
+disallowmissing(x::AbstractVector{T}) where {T} = convert(AbstractArray{Missings.T(T)}, x)
 
 Base.promote_rule(::Type{T}, ::Type{Missing}) where {T} = Union{T, Missing}
 Base.promote_rule(::Type{T}, ::Type{Union{S,Missing}}) where {T,S} = Union{promote_type(T, S), Missing}

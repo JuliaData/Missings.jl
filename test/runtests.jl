@@ -254,6 +254,24 @@ using Base.Test, Missings, Compat
     @test missings(Union{Int, Missing}, 1, 2) isa Matrix{Union{Int, Missing}}
     @test Union{Int, Missing}[1,2,3] == (Union{Int, Missing})[1,2,3]
 
+    @test allowmissing([1]) == [1]
+    @test allowmissing([1]) isa AbstractVector{Union{Int, Missing}}
+    @test allowmissing(Any[:a]) == [:a]
+    @test allowmissing(Any[:a]) isa AbstractVector{Any}
+    @test isequal(allowmissing([1, missing]), [1, missing])
+    @test allowmissing([1, missing]) isa AbstractVector{Union{Int, Missing}}
+    @test isequal(allowmissing([missing]), [missing])
+    @test allowmissing([missing]) isa AbstractVector{Missing}
+
+    @test disallowmissing(Union{Int, Missing}[1]) == [1]
+    @test disallowmissing(Union{Int, Missing}[1]) isa AbstractVector{Int}
+    @test disallowmissing([1]) == [1]
+    @test disallowmissing([1]) isa AbstractVector{Int}
+    @test disallowmissing(Any[:a]) == [:a]
+    @test disallowmissing(Any[:a]) isa AbstractVector{Any}
+    @test_throws MethodError disallowmissing([1, missing])
+    @test_throws MethodError disallowmissing([missing])
+
     @test convert(Union{Int, Missing}, 1.0) == 1
 
     # AbstractArray{>:Missing}
