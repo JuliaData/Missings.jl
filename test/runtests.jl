@@ -263,6 +263,15 @@ using Base.Test, Missings, Compat
     @test isequal(allowmissing([missing]), [missing])
     @test allowmissing([missing]) isa AbstractVector{Missing}
 
+    @test allowmissing([1 1]) == [1 1]
+    @test allowmissing([1 1]) isa AbstractArray{Union{Int, Missing}, 2}
+    @test allowmissing([:a 1]) == [:a 1]
+    @test allowmissing([:a 1]) isa AbstractArray{Any, 2}
+    @test isequal(allowmissing([1 missing]), [1 missing])
+    @test allowmissing([1 missing]) isa AbstractArray{Union{Int, Missing}, 2}
+    @test isequal(allowmissing([missing missing]), [missing missing])
+    @test allowmissing([missing missing]) isa AbstractArray{Missing, 2}
+
     @test disallowmissing(Union{Int, Missing}[1]) == [1]
     @test disallowmissing(Union{Int, Missing}[1]) isa AbstractVector{Int}
     @test disallowmissing([1]) == [1]
@@ -271,6 +280,15 @@ using Base.Test, Missings, Compat
     @test disallowmissing(Any[:a]) isa AbstractVector{Any}
     @test_throws MethodError disallowmissing([1, missing])
     @test_throws MethodError disallowmissing([missing])
+
+    @test disallowmissing(Union{Int, Missing}[1 1]) == [1 1]
+    @test disallowmissing(Union{Int, Missing}[1 1]) isa AbstractArray{Int, 2}
+    @test disallowmissing([1 1]) == [1 1]
+    @test disallowmissing([1 1]) isa AbstractArray{Int, 2}
+    @test disallowmissing([:a 1]) == [:a 1]
+    @test disallowmissing([:a 1]) isa AbstractArray{Any, 2}
+    @test_throws MethodError disallowmissing([1 missing])
+    @test_throws MethodError disallowmissing([missing missing])
 
     @test convert(Union{Int, Missing}, 1.0) == 1
 
