@@ -61,7 +61,7 @@ When possible, the result will share memory with `x` (as with [`convert`](@ref))
 
 See also: [`disallowmissing`](@ref)
 """
-allowmissing(x::AbstractVector{T}) where {T} = convert(AbstractArray{Union{T, Missing}}, x)
+allowmissing(x::AbstractArray{T}) where {T} = convert(AbstractArray{Union{T, Missing}}, x)
 
 """
     disallowmissing(x::AbstractArray)
@@ -74,7 +74,7 @@ If `x` contains missing values, a `MethodError` is thrown.
 
 See also: [`allowmissing`](@ref)
 """
-disallowmissing(x::AbstractVector{T}) where {T} = convert(AbstractArray{Missings.T(T)}, x)
+disallowmissing(x::AbstractArray{T}) where {T} = convert(AbstractArray{Missings.T(T)}, x)
 
 Base.promote_rule(::Type{T}, ::Type{Missing}) where {T} = Union{T, Missing}
 Base.promote_rule(::Type{T}, ::Type{Union{S,Missing}}) where {T,S} = Union{promote_type(T, S), Missing}
