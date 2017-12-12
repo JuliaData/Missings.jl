@@ -1,50 +1,215 @@
 __precompile__(true)
 module Missings
 
-import Base: *, <, ==, !=, <=, !, +, -, ^, /, &, |, xor
 using Compat
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
        Missing, MissingException, levels, skipmissing
 
-"""
-    Missing
+if VERSION < v"0.7.0-DEV.2762"        
+    """
+        Missing
 
-A type with no fields whose singleton instance [`missing`](@ref) is used
-to represent missing values.
-"""
-struct Missing end
+    A type with no fields whose singleton instance [`missing`](@ref) is used
+    to represent missing values.
+    """
+    struct Missing end
 
-"""
-    missing
+    """
+        MissingException(msg)
 
-The singleton instance of type [`Missing`](@ref) representing a missing value.
-"""
-const missing = Missing()
-
-Base.show(io::IO, x::Missing) = print(io, "missing")
-
-"""
-    MissingException(msg)
-
-Exception thrown when a [`missing`](@ref) value is encountered in a situation
-where it is not supported. The error message, in the `msg` field
-may provide more specific details.
-"""
-struct MissingException <: Exception
-    msg::AbstractString
+    Exception thrown when a [`missing`](@ref) value is encountered in a situation
+    where it is not supported. The error message, in the `msg` field
+    may provide more specific details.
+    """
+    struct MissingException <: Exception
+        msg::AbstractString
+    end
 end
 
-Base.showerror(io::IO, ex::MissingException) =
-    print(io, "MissingException: ", ex.msg)
+import Base: ==, !=, <, *, <=, !, +, -, ^, /, &, |, xor
+
+if VERSION >= v"0.7.0-DEV.2762"
+    using Base: ismissing, missing, Missing, MissingException
+else
+    """
+        missing
+
+    The singleton instance of type [`Missing`](@ref) representing a missing value.
+    """
+    const missing = Missing()
+
+    Base.show(io::IO, x::Missing) = print(io, "missing")
+
+    Base.showerror(io::IO, ex::MissingException) =
+        print(io, "MissingException: ", ex.msg)
+
+    ismissing(::Any) = false
+    ismissing(::Missing) = true
+
+    Base.promote_rule(::Type{T}, ::Type{Missing}) where {T} = Union{T, Missing}
+    Base.promote_rule(::Type{T}, ::Type{Union{S,Missing}}) where {T,S} = Union{promote_type(T, S), Missing}
+    Base.promote_rule(::Type{T}, ::Type{Any}) where {T} = Any
+    Base.promote_rule(::Type{Any}, ::Type{Missing}) = Any
+    Base.promote_rule(::Type{Missing}, ::Type{Any}) = Any
+    Base.promote_rule(::Type{Missing}, ::Type{Missing}) = Missing
+
+    Base.convert(::Type{Union{T, Missing}}, x) where {T} = convert(T, x)
+
+    # Comparison operators
+    ==(::Missing, ::Missing) = missing
+    ==(::Missing, b) = missing
+    ==(a, ::Missing) = missing
+    # != must be defined explicitly since fallback expects a Bool
+    !=(::Missing, ::Missing) = missing
+    !=(::Missing, b) = missing
+    !=(a, ::Missing) = missing
+    Base.isequal(::Missing, ::Missing) = true
+    Base.isequal(::Missing, b) = false
+    Base.isequal(a, ::Missing) = false
+    <(::Missing, ::Missing) = missing
+    <(::Missing, b) = missing
+    <(a, ::Missing) = missing
+    Base.isless(::Missing, ::Missing) = false
+    Base.isless(::Missing, b) = false
+    Base.isless(a, ::Missing) = true
+    if VERSION < v"0.7.0-DEV.300"
+        <=(::Missing, ::Missing) = missing
+        <=(::Missing, b) = missing
+        <=(a, ::Missing) = missing
+    end
+
+    # Unary operators/functions
+    for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero), :(Base.one), :(Base.oneunit),
+            :(Base.abs), :(Base.abs2), :(Base.sign),
+            :(Base.acos), :(Base.acosh), :(Base.asin), :(Base.asinh), :(Base.atan), :(Base.atanh),
+            :(Base.sin), :(Base.sinh), :(Base.cos), :(Base.cosh), :(Base.tan), :(Base.tanh),
+            :(Base.exp), :(Base.exp2), :(Base.expm1), :(Base.log), :(Base.log10), :(Base.log1p),
+            :(Base.log2), :(Base.exponent), :(Base.sqrt), :(Base.gamma), :(Base.lgamma),
+            :(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Base.isodd),
+            :(Base.isinteger), :(Base.isreal), :(Base.isimag), :(Base.isnan), :(Base.isempty),
+            :(Base.iszero), :(Base.transpose), :(Base.ctranspose), :(Base.float))
+        @eval $(f)(d::Missing) = missing
+    end
+
+    for f in (:(Base.zero), :(Base.one), :(Base.oneunit))
+        @eval function $(f)(::Type{Union{T, Missing}}) where T
+            T === Any && throw(MethodError($f, (Any,)))
+            $f(T)
+        end
+    end
+
+    # Binary operators/functions
+    for f in (:(+), :(-), :(*), :(/), :(^),
+            :(Base.div), :(Base.mod), :(Base.fld), :(Base.rem), :(Base.min), :(Base.max))
+        @eval begin
+            # Scalar with missing
+            ($f)(::Missing, ::Missing) = missing
+            ($f)(d::Missing, x::Number) = missing
+            ($f)(d::Number, x::Missing) = missing
+        end
+    end
+
+    # Rounding and related functions
+    for f in (:(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc))
+        @eval begin
+            ($f)(::Missing, digits::Integer=0, base::Integer=0) = missing
+            ($f)(::Type{>:Missing}, ::Missing) = missing
+            ($f)(::Type{T}, ::Missing) where {T} =
+                throw(MissingException("cannot convert a missing value to type $T"))
+        end
+    end
+
+    # to avoid ambiguity warnings
+    (^)(::Missing, ::Integer) = missing
+
+    # Bit operators
+    (&)(::Missing, ::Missing) = missing
+    (&)(a::Missing, b::Bool) = ifelse(b, missing, false)
+    (&)(b::Bool, a::Missing) = ifelse(b, missing, false)
+    (&)(::Missing, ::Integer) = missing
+    (&)(::Integer, ::Missing) = missing
+    (|)(::Missing, ::Missing) = missing
+    (|)(a::Missing, b::Bool) = ifelse(b, true, missing)
+    (|)(b::Bool, a::Missing) = ifelse(b, true, missing)
+    (|)(::Missing, ::Integer) = missing
+    (|)(::Integer, ::Missing) = missing
+    xor(::Missing, ::Missing) = missing
+    xor(a::Missing, b::Bool) = missing
+    xor(b::Bool, a::Missing) = missing
+    xor(::Missing, ::Integer) = missing
+    xor(::Integer, ::Missing) = missing
+
+    # String functions
+    *(d::Missing, x::AbstractString) = missing
+    *(d::AbstractString, x::Missing) = missing
+
+    # AbstractArray{>:Missing} functions
+
+    function ==(A::AbstractArray{>:Missing}, B::AbstractArray)
+        if indices(A) != indices(B)
+            return false
+        end
+        if isa(A,AbstractRange) != isa(B,AbstractRange)
+            return false
+        end
+        anymissing = false
+        @inbounds for (a, b) in zip(A, B)
+            eq = (a == b)
+            if eq === false
+                return false
+            else
+                anymissing |= ismissing(eq)
+            end
+        end
+        return anymissing ? missing : true
+    end
+
+    ==(A::AbstractArray, B::AbstractArray{>:Missing}) = (B == A)
+    ==(A::AbstractArray{>:Missing}, B::AbstractArray{>:Missing}) =
+        invoke(==, Tuple{AbstractArray{>:Missing}, AbstractArray}, A, B)
+
+    !=(x::AbstractArray{>:Missing}, y::AbstractArray) = !(x == y)
+    !=(x::AbstractArray, y::AbstractArray{>:Missing}) = !(x == y)
+    !=(x::AbstractArray{>:Missing}, y::AbstractArray{>:Missing}) = !(x == y)
+
+    function Base.any(f, A::AbstractArray{>:Missing})
+        anymissing = false
+        @inbounds for x in A
+            v = f(x)
+            if v === true
+                return true
+            else
+                anymissing |= ismissing(v)
+            end
+        end
+        return anymissing ? missing : false
+    end
+
+    function Base.all(f, A::AbstractArray{>:Missing})
+        anymissing = false
+        @inbounds for x in A
+            v = f(x)
+            if v === false
+                return false
+            else
+                anymissing |= ismissing(v)
+            end
+        end
+        return anymissing ? missing : true
+    end
+
+    function Base.float(A::AbstractArray{Union{T, Missing}}) where {T}
+        U = typeof(float(zero(T)))
+        convert(AbstractArray{Union{U, Missing}}, A)
+    end
+    Base.float(A::AbstractArray{Missing}) = A
+end
 
 T(::Type{Union{T1, Missing}}) where {T1} = T1
 T(::Type{Missing}) = Union{}
 T(::Type{T1}) where {T1} = T1
 T(::Type{Any}) = Any
-
-ismissing(::Any) = false
-ismissing(::Missing) = true
 
 # vector constructors
 missings(dims...) = fill(missing, dims)
@@ -75,103 +240,6 @@ If `x` contains missing values, a `MethodError` is thrown.
 See also: [`allowmissing`](@ref)
 """
 disallowmissing(x::AbstractArray{T}) where {T} = convert(AbstractArray{Missings.T(T)}, x)
-
-Base.promote_rule(::Type{T}, ::Type{Missing}) where {T} = Union{T, Missing}
-Base.promote_rule(::Type{T}, ::Type{Union{S,Missing}}) where {T,S} = Union{promote_type(T, S), Missing}
-Base.promote_rule(::Type{T}, ::Type{Any}) where {T} = Any
-Base.promote_rule(::Type{Any}, ::Type{Missing}) = Any
-Base.promote_rule(::Type{Missing}, ::Type{Any}) = Any
-Base.promote_rule(::Type{Missing}, ::Type{Missing}) = Missing
-
-Base.convert(::Type{Union{T, Missing}}, x) where {T} = convert(T, x)
-
-# Comparison operators
-==(::Missing, ::Missing) = missing
-==(::Missing, b) = missing
-==(a, ::Missing) = missing
-# != must be defined explicitly since fallback expects a Bool
-!=(::Missing, ::Missing) = missing
-!=(::Missing, b) = missing
-!=(a, ::Missing) = missing
-Base.isequal(::Missing, ::Missing) = true
-Base.isequal(::Missing, b) = false
-Base.isequal(a, ::Missing) = false
-<(::Missing, ::Missing) = missing
-<(::Missing, b) = missing
-<(a, ::Missing) = missing
-Base.isless(::Missing, ::Missing) = false
-Base.isless(::Missing, b) = false
-Base.isless(a, ::Missing) = true
-if VERSION < v"0.7.0-DEV.300"
-    <=(::Missing, ::Missing) = missing
-    <=(::Missing, b) = missing
-    <=(a, ::Missing) = missing
-end
-
-# Unary operators/functions
-for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero), :(Base.one), :(Base.oneunit),
-          :(Base.abs), :(Base.abs2), :(Base.sign),
-          :(Base.acos), :(Base.acosh), :(Base.asin), :(Base.asinh), :(Base.atan), :(Base.atanh),
-          :(Base.sin), :(Base.sinh), :(Base.cos), :(Base.cosh), :(Base.tan), :(Base.tanh),
-          :(Base.exp), :(Base.exp2), :(Base.expm1), :(Base.log), :(Base.log10), :(Base.log1p),
-          :(Base.log2), :(Base.exponent), :(Base.sqrt), :(Base.gamma), :(Base.lgamma),
-          :(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Base.isodd),
-          :(Base.isinteger), :(Base.isreal), :(Base.isimag), :(Base.isnan), :(Base.isempty),
-          :(Base.iszero), :(Base.transpose), :(Base.ctranspose), :(Base.float))
-    @eval $(f)(d::Missing) = missing
-end
-
-for f in (:(Base.zero), :(Base.one), :(Base.oneunit))
-    @eval function $(f)(::Type{Union{T, Missing}}) where T
-        T === Any && throw(MethodError($f, (Any,)))
-        $f(T)
-    end
-end
-
-# Binary operators/functions
-for f in (:(+), :(-), :(*), :(/), :(^),
-          :(Base.div), :(Base.mod), :(Base.fld), :(Base.rem), :(Base.min), :(Base.max))
-    @eval begin
-        # Scalar with missing
-        ($f)(::Missing, ::Missing) = missing
-        ($f)(d::Missing, x::Number) = missing
-        ($f)(d::Number, x::Missing) = missing
-    end
-end
-
-# Rounding and related functions
-for f in (:(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc))
-    @eval begin
-        ($f)(::Missing, digits::Integer=0, base::Integer=0) = missing
-        ($f)(::Type{>:Missing}, ::Missing) = missing
-        ($f)(::Type{T}, ::Missing) where {T} =
-            throw(MissingException("cannot convert a missing value to type $T"))
-    end
-end
-
-# to avoid ambiguity warnings
-(^)(::Missing, ::Integer) = missing
-
-# Bit operators
-(&)(::Missing, ::Missing) = missing
-(&)(a::Missing, b::Bool) = ifelse(b, missing, false)
-(&)(b::Bool, a::Missing) = ifelse(b, missing, false)
-(&)(::Missing, ::Integer) = missing
-(&)(::Integer, ::Missing) = missing
-(|)(::Missing, ::Missing) = missing
-(|)(a::Missing, b::Bool) = ifelse(b, true, missing)
-(|)(b::Bool, a::Missing) = ifelse(b, true, missing)
-(|)(::Missing, ::Integer) = missing
-(|)(::Integer, ::Missing) = missing
-xor(::Missing, ::Missing) = missing
-xor(a::Missing, b::Bool) = missing
-xor(b::Bool, a::Missing) = missing
-xor(::Missing, ::Integer) = missing
-xor(::Integer, ::Missing) = missing
-
-# String functions
-*(d::Missing, x::AbstractString) = missing
-*(d::AbstractString, x::Missing) = missing
 
 # Iterators
 """
@@ -394,67 +462,6 @@ function levels(x)
     end
     levs
 end
-
-# AbstractArray{>:Missing} functions
-
-function ==(A::AbstractArray{>:Missing}, B::AbstractArray)
-    if indices(A) != indices(B)
-        return false
-    end
-    if isa(A,AbstractRange) != isa(B,AbstractRange)
-        return false
-    end
-    anymissing = false
-    @inbounds for (a, b) in zip(A, B)
-        eq = (a == b)
-        if eq === false
-            return false
-        else
-            anymissing |= ismissing(eq)
-        end
-    end
-    return anymissing ? missing : true
-end
-
-==(A::AbstractArray, B::AbstractArray{>:Missing}) = (B == A)
-==(A::AbstractArray{>:Missing}, B::AbstractArray{>:Missing}) =
-    invoke(==, Tuple{AbstractArray{>:Missing}, AbstractArray}, A, B)
-
-!=(x::AbstractArray{>:Missing}, y::AbstractArray) = !(x == y)
-!=(x::AbstractArray, y::AbstractArray{>:Missing}) = !(x == y)
-!=(x::AbstractArray{>:Missing}, y::AbstractArray{>:Missing}) = !(x == y)
-
-function Base.any(f, A::AbstractArray{>:Missing})
-    anymissing = false
-    @inbounds for x in A
-        v = f(x)
-        if v === true
-            return true
-        else
-            anymissing |= ismissing(v)
-        end
-    end
-    return anymissing ? missing : false
-end
-
-function Base.all(f, A::AbstractArray{>:Missing})
-    anymissing = false
-    @inbounds for x in A
-        v = f(x)
-        if v === false
-            return false
-        else
-            anymissing |= ismissing(v)
-        end
-    end
-    return anymissing ? missing : true
-end
-
-function Base.float(A::AbstractArray{Union{T, Missing}}) where {T}
-    U = typeof(float(zero(T)))
-    convert(AbstractArray{Union{U, Missing}}, A)
-end
-Base.float(A::AbstractArray{Missing}) = A
 
 # Deprecations
 @deprecate skip(itr) skipmissing(itr) false

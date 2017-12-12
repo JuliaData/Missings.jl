@@ -31,8 +31,9 @@ using Base.Test, Missings, Compat
                             identity, zero, one, oneunit,
                             iseven, isodd, ispow2,
                             isfinite, isinf, isnan, iszero,
-                            isinteger, isreal, isimag,
+                            isinteger, isreal,
                             isempty, transpose, ctranspose, float]
+    VERSION < v"0.7.0-DEV" && push!(elementary_functions, isimag)
 
     rounding_functions = [ceil, floor, round, trunc]
 
