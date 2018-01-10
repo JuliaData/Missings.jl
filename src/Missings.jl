@@ -206,6 +206,10 @@ else
     Base.float(A::AbstractArray{Missing}) = A
 end
 
+if isdefined(Base, :adjoint)
+Base.adjoint(d::Missing) = missing
+end
+
 T(::Type{Union{T1, Missing}}) where {T1} = T1
 T(::Type{Missing}) = Union{}
 T(::Type{T1}) where {T1} = T1
@@ -213,8 +217,8 @@ T(::Type{Any}) = Any
 
 # vector constructors
 missings(dims...) = fill(missing, dims)
-missings(::Type{T}, dims...) where {T >: Missing} = fill!(Array{T}(dims), missing)
-missings(::Type{T}, dims...) where {T} = fill!(Array{Union{T, Missing}}(dims), missing)
+missings(::Type{T}, dims...) where {T >: Missing} = fill!(Array{T}(uninitialized, dims), missing)
+missings(::Type{T}, dims...) where {T} = fill!(Array{Union{T, Missing}}(uninitialized, dims), missing)
 
 """
     allowmissing(x::AbstractArray)
@@ -272,10 +276,17 @@ struct EachReplaceMissing{T, U}
     x::T
     replacement::U
 end
+if VERSION < v"0.7.0-DEV.3309"
 Base.iteratorsize(::Type{<:EachReplaceMissing{T}}) where {T} =
     Base.iteratorsize(T)
 Base.iteratoreltype(::Type{<:EachReplaceMissing{T}}) where {T} =
     Base.iteratoreltype(T)
+else
+Base.IteratorSize(::Type{<:EachReplaceMissing{T}}) where {T} =
+    Base.IteratorSize(T)
+Base.IteratorEltype(::Type{<:EachReplaceMissing{T}}) where {T} =
+    Base.IteratorEltype(T)
+end
 Base.length(itr::EachReplaceMissing) = length(itr.x)
 Base.size(itr::EachReplaceMissing) = size(itr.x)
 Base.start(itr::EachReplaceMissing) = start(itr.x)
@@ -286,6 +297,7 @@ Base.eltype(itr::EachReplaceMissing) = Missings.T(eltype(itr.x))
     (v isa Missing ? itr.replacement : v, s)
 end
 
+@static if !isdefined(Base, :skipmissing)
 """
     skipmissing(itr)
 
@@ -315,10 +327,17 @@ skipmissing(itr) = EachSkipMissing(itr)
 struct EachSkipMissing{T}
     x::T
 end
+if VERSION < v"0.7.0-DEV.3309"
 Base.iteratorsize(::Type{<:EachSkipMissing}) =
     Base.SizeUnknown()
 Base.iteratoreltype(::Type{EachSkipMissing{T}}) where {T} =
     Base.iteratoreltype(T)
+else
+Base.IteratorSize(::Type{<:EachSkipMissing}) =
+    Base.SizeUnknown()
+Base.IteratorEltype(::Type{EachSkipMissing{T}}) where {T} =
+    Base.IteratorEltype(T)
+end
 Base.eltype(itr::EachSkipMissing) = Missings.T(eltype(itr.x))
 # Fallback implementation for general iterables: we cannot access a value twice,
 # so after finding the next non-missing element in start() or next(), we have to
@@ -364,6 +383,8 @@ end
     (v, _next_nonmissing_ind(itr.x, state))
 end
 
+end # isdefined
+
 """
     Missings.fail(itr)
 
@@ -391,10 +412,17 @@ fail(itr) = EachFailMissing(itr)
 struct EachFailMissing{T}
     x::T
 end
+if VERSION < v"0.7.0-DEV.3309"
 Base.iteratorsize(::Type{EachFailMissing{T}}) where {T} =
     Base.iteratorsize(T)
 Base.iteratoreltype(::Type{EachFailMissing{T}}) where {T} =
     Base.iteratoreltype(T)
+else
+Base.IteratorSize(::Type{EachFailMissing{T}}) where {T} =
+    Base.IteratorSize(T)
+Base.IteratorEltype(::Type{EachFailMissing{T}}) where {T} =
+    Base.IteratorEltype(T)
+end
 Base.length(itr::EachFailMissing) = length(itr.x)
 Base.size(itr::EachFailMissing) = size(itr.x)
 Base.start(itr::EachFailMissing) = start(itr.x)

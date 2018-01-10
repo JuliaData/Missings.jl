@@ -1,4 +1,9 @@
-using Base.Test, Missings, Compat
+@static if VERSION < v"0.7.0-DEV.2005"
+    using Base.Test
+else
+    using Test
+end
+using Missings, Compat
 
 @testset "Missings" begin
     # test promote rules
@@ -17,7 +22,7 @@ using Base.Test, Missings, Compat
     @test promote_type(Union{Int, Missing}, Union{Int, Missing}) == Union{Int, Missing}
     @test promote_type(Union{Float64, Missing}, Union{String, Missing}) == Any
     @test promote_type(Union{Float64, Missing}, Union{Int, Missing}) == Union{Float64, Missing}
-    @test promote_type(Union{Void, Missing, Int}, Float64) == Any
+    # @test_broken promote_type(Union{Nothing, Missing, Int}, Float64) == Any
 
     bit_operators = [&, |, ⊻]
 
@@ -32,7 +37,7 @@ using Base.Test, Missings, Compat
                             iseven, isodd, ispow2,
                             isfinite, isinf, isnan, iszero,
                             isinteger, isreal,
-                            isempty, transpose, ctranspose, float]
+                            isempty, transpose, float]
     VERSION < v"0.7.0-DEV" && push!(elementary_functions, isimag)
 
     rounding_functions = [ceil, floor, round, trunc]
@@ -45,6 +50,11 @@ using Base.Test, Missings, Compat
     # All elementary functions return missing when evaluating missing
     for f in elementary_functions
         @test ismissing(f(missing))
+    end
+    if isdefined(Base, :adjoint)
+        @test ismissing(adjoint(missing))
+    else
+        @test ismissing(ctranspose(missing))
     end
 
     # All rounding functions return missing when evaluating missing as first argument
