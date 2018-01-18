@@ -212,16 +212,16 @@ using Base.Test, Missings, Compat
     @test collect(x) == [1, 2, 4]
     @test collect(x) isa Vector{Int}
 
-    @test Missings.coalesce(missing, 1) === 1
-    @test Missings.coalesce(1, missing) === 1
-    @test Missings.coalesce(missing, missing) === missing
-    @test Missings.coalesce.([missing, 1, missing], 0) == [0, 1, 0]
-    @test Missings.coalesce.([missing, 1, missing], 0) isa Vector{Int}
-    @test Missings.coalesce.([missing, 1, missing], [0, 10, 5]) == [0, 1, 5]
-    @test Missings.coalesce.([missing, 1, missing], [0, 10, 5]) isa Vector{Int}
-    @test isequal(Missings.coalesce.([missing, 1, missing], [0, missing, missing]), [0, 1, missing])
+    @test coalesce(missing, 1) === 1
+    @test coalesce(1, missing) === 1
+    @test coalesce(missing, missing) === missing
+    @test coalesce.([missing, 1, missing], 0) == [0, 1, 0]
+    @test coalesce.([missing, 1, missing], 0) isa Vector{Int}
+    @test coalesce.([missing, 1, missing], [0, 10, 5]) == [0, 1, 5]
+    @test coalesce.([missing, 1, missing], [0, 10, 5]) isa Vector{Int}
+    @test isequal(coalesce.([missing, 1, missing], [0, missing, missing]), [0, 1, missing])
     # Fails in Julia 0.6 and 0.7.0-DEV.1556
-    @test_broken Missings.coalesce.([missing, 1, missing], [0, missing, missing]) isa Vector{Union{Missing, Int}}
+    @test_broken coalesce.([missing, 1, missing], [0, missing, missing]) isa Vector{Union{Missing, Int}}
 
     @test levels(1:1) == levels([1]) == levels([1, missing]) == levels([missing, 1]) == [1]
     @test levels(2:-1:1) == levels([2, 1]) == levels([2, missing, 1]) == [1, 2]

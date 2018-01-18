@@ -3,10 +3,10 @@ module Missings
 
 using Compat
 
-export allowmissing, disallowmissing, ismissing, missing, missings,
+export allowmissing, coalesce, disallowmissing, ismissing, missing, missings,
        Missing, MissingException, levels, skipmissing
 
-if VERSION < v"0.7.0-DEV.2762"        
+if VERSION < v"0.7.0-DEV.2762"
     """
         Missing
 
@@ -30,7 +30,7 @@ end
 import Base: ==, !=, <, *, <=, !, +, -, ^, /, &, |, xor
 
 if VERSION >= v"0.7.0-DEV.2762"
-    using Base: ismissing, missing, Missing, MissingException
+    using Base: coalesce, ismissing, missing, Missing, MissingException
 else
     """
         missing
@@ -204,6 +204,43 @@ else
         convert(AbstractArray{Union{U, Missing}}, A)
     end
     Base.float(A::AbstractArray{Missing}) = A
+
+    """
+        coalesce(x, y...)
+
+    Return the first non-`missing` value in the arguments, or `missing` if all arguments are `missing`.
+
+    In its broadcasted form, this function can be used to replace all missing values
+    in an array with a given value (see examples).
+
+    # Examples
+
+    ```jldoctest
+    julia> coalesce(missing, 1)
+    1
+
+    julia> coalesce(1, missing)
+    1
+
+    julia> coalesce(missing, missing)
+    missing
+
+    julia> coalesce.([missing, 1, missing], 0)
+    3-element Array{$Int,1}:
+     0
+     1
+     0
+
+    julia> coalesce.([missing, 1, missing], [0, 10, 5])
+    3-element Array{$Int,1}:
+     0
+     1
+     5
+
+    ```
+    """
+    coalesce(x) = x
+    coalesce(x, y...) = ifelse(x !== missing, x, coalesce(y...))
 end
 
 T(::Type{Union{T1, Missing}}) where {T1} = T1
@@ -406,43 +443,6 @@ Base.eltype(itr::EachFailMissing) = Missings.T(eltype(itr.x))
     ismissing(v) && throw(MissingException("missing value encountered by Missings.fail"))
     (v::eltype(itr), s)
 end
-
-"""
-    coalesce(x, y...)
-
-Return the first non-`missing` value in the arguments, or `missing` if all arguments are `missing`.
-
-In its broadcasted form, this function can be used to replace all missing values
-in an array with a given value (see examples).
-
-# Examples
-
-```jldoctest
-julia> coalesce(missing, 1)
-1
-
-julia> coalesce(1, missing)
-1
-
-julia> coalesce(missing, missing)
-missing
-
-julia> coalesce.([missing, 1, missing], 0)
-3-element Array{$Int,1}:
- 0
- 1
- 0
-
-julia> coalesce.([missing, 1, missing], [0, 10, 5])
-3-element Array{$Int,1}:
- 0
- 1
- 5
-
-```
-"""
-coalesce(x) = x
-coalesce(x, y...) = ifelse(x !== missing, x, coalesce(y...))
 
 """
     levels(x)
