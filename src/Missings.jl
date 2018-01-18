@@ -3,8 +3,8 @@ module Missings
 
 using Compat
 
-export allowmissing, coalesce, disallowmissing, ismissing, missing, missings,
-       Missing, MissingException, levels, skipmissing
+export allowmissing, disallowmissing, ismissing, missing, missings,
+       Missing, MissingException, levels, coalesce 
 
 if VERSION < v"0.7.0-DEV.2762"
     """
@@ -30,7 +30,7 @@ end
 import Base: ==, !=, <, *, <=, !, +, -, ^, /, &, |, xor
 
 if VERSION >= v"0.7.0-DEV.2762"
-    using Base: coalesce, ismissing, missing, Missing, MissingException
+    using Base: ismissing, missing, Missing, MissingException
 else
     """
         missing
@@ -88,7 +88,7 @@ else
             :(Base.log2), :(Base.exponent), :(Base.sqrt), :(Base.gamma), :(Base.lgamma),
             :(Base.iseven), :(Base.ispow2), :(Base.isfinite), :(Base.isinf), :(Base.isodd),
             :(Base.isinteger), :(Base.isreal), :(Base.isimag), :(Base.isnan), :(Base.isempty),
-            :(Base.iszero), :(Base.transpose), :(Base.ctranspose), :(Base.float))
+            :(Base.iszero), :(Base.transpose), :(Base.float))
         @eval $(f)(d::Missing) = missing
     end
 
@@ -204,43 +204,10 @@ else
         convert(AbstractArray{Union{U, Missing}}, A)
     end
     Base.float(A::AbstractArray{Missing}) = A
+end
 
-    """
-        coalesce(x, y...)
-
-    Return the first non-`missing` value in the arguments, or `missing` if all arguments are `missing`.
-
-    In its broadcasted form, this function can be used to replace all missing values
-    in an array with a given value (see examples).
-
-    # Examples
-
-    ```jldoctest
-    julia> coalesce(missing, 1)
-    1
-
-    julia> coalesce(1, missing)
-    1
-
-    julia> coalesce(missing, missing)
-    missing
-
-    julia> coalesce.([missing, 1, missing], 0)
-    3-element Array{$Int,1}:
-     0
-     1
-     0
-
-    julia> coalesce.([missing, 1, missing], [0, 10, 5])
-    3-element Array{$Int,1}:
-     0
-     1
-     5
-
-    ```
-    """
-    coalesce(x) = x
-    coalesce(x, y...) = ifelse(x !== missing, x, coalesce(y...))
+@static if isdefined(Base, :adjoint) && !applicable(adjoint, missing)
+    Base.adjoint(::Missing) = missing
 end
 
 T(::Type{Union{T1, Missing}}) where {T1} = T1
@@ -250,8 +217,8 @@ T(::Type{Any}) = Any
 
 # vector constructors
 missings(dims...) = fill(missing, dims)
-missings(::Type{T}, dims...) where {T >: Missing} = fill!(Array{T}(dims), missing)
-missings(::Type{T}, dims...) where {T} = fill!(Array{Union{T, Missing}}(dims), missing)
+missings(::Type{T}, dims...) where {T >: Missing} = fill!(Array{T}(uninitialized, dims), missing)
+missings(::Type{T}, dims...) where {T} = fill!(Array{Union{T, Missing}}(uninitialized, dims), missing)
 
 """
     allowmissing(x::AbstractArray)
@@ -309,10 +276,10 @@ struct EachReplaceMissing{T, U}
     x::T
     replacement::U
 end
-Base.iteratorsize(::Type{<:EachReplaceMissing{T}}) where {T} =
-    Base.iteratorsize(T)
-Base.iteratoreltype(::Type{<:EachReplaceMissing{T}}) where {T} =
-    Base.iteratoreltype(T)
+Compat.IteratorSize(::Type{<:EachReplaceMissing{T}}) where {T} =
+    Compat.IteratorSize(T)
+Compat.IteratorEltype(::Type{<:EachReplaceMissing{T}}) where {T} =
+    Compat.IteratorEltype(T)
 Base.length(itr::EachReplaceMissing) = length(itr.x)
 Base.size(itr::EachReplaceMissing) = size(itr.x)
 Base.start(itr::EachReplaceMissing) = start(itr.x)
@@ -323,6 +290,8 @@ Base.eltype(itr::EachReplaceMissing) = Missings.T(eltype(itr.x))
     (v isa Missing ? itr.replacement : v, s)
 end
 
+@static if !isdefined(Base, :skipmissing)
+export skipmissing
 """
     skipmissing(itr)
 
@@ -352,10 +321,10 @@ skipmissing(itr) = EachSkipMissing(itr)
 struct EachSkipMissing{T}
     x::T
 end
-Base.iteratorsize(::Type{<:EachSkipMissing}) =
+Compat.IteratorSize(::Type{<:EachSkipMissing}) =
     Base.SizeUnknown()
-Base.iteratoreltype(::Type{EachSkipMissing{T}}) where {T} =
-    Base.iteratoreltype(T)
+Compat.IteratorEltype(::Type{EachSkipMissing{T}}) where {T} =
+    Compat.IteratorEltype(T)
 Base.eltype(itr::EachSkipMissing) = Missings.T(eltype(itr.x))
 # Fallback implementation for general iterables: we cannot access a value twice,
 # so after finding the next non-missing element in start() or next(), we have to
@@ -401,6 +370,8 @@ end
     (v, _next_nonmissing_ind(itr.x, state))
 end
 
+end # isdefined
+
 """
     Missings.fail(itr)
 
@@ -428,10 +399,10 @@ fail(itr) = EachFailMissing(itr)
 struct EachFailMissing{T}
     x::T
 end
-Base.iteratorsize(::Type{EachFailMissing{T}}) where {T} =
-    Base.iteratorsize(T)
-Base.iteratoreltype(::Type{EachFailMissing{T}}) where {T} =
-    Base.iteratoreltype(T)
+Compat.IteratorSize(::Type{EachFailMissing{T}}) where {T} =
+    Compat.IteratorSize(T)
+Compat.IteratorEltype(::Type{EachFailMissing{T}}) where {T} =
+    Compat.IteratorEltype(T)
 Base.length(itr::EachFailMissing) = length(itr.x)
 Base.size(itr::EachFailMissing) = size(itr.x)
 Base.start(itr::EachFailMissing) = start(itr.x)
@@ -465,5 +436,42 @@ end
 
 # Deprecations
 @deprecate skip(itr) skipmissing(itr) false
+
+"""
+    coalesce(x, y...)
+
+Return the first non-`missing` value in the arguments, or `missing` if all arguments are `missing`.
+
+In its broadcasted form, this function can be used to replace all missing values
+in an array with a given value (see examples).
+
+# Examples
+
+```jldoctest
+julia> coalesce(missing, 1)
+1
+
+julia> coalesce(1, missing)
+1
+
+julia> coalesce(missing, missing)
+missing
+
+julia> coalesce.([missing, 1, missing], 0)
+3-element Array{$Int,1}:
+ 0
+ 1
+ 0
+
+julia> coalesce.([missing, 1, missing], [0, 10, 5])
+3-element Array{$Int,1}:
+ 0
+ 1
+ 5
+
+```
+"""
+Compat.coalesce(x::Missing) = missing
+Compat.coalesce(x::Missing, y...) = coalesce(y...)
 
 end # module
