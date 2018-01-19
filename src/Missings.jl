@@ -124,7 +124,6 @@ else
     (^)(::Missing, ::Integer) = missing
 
     # Bit operators
-    (~)(::Missing) = missing
     (~)(a::Missing) = missing
     (&)(::Missing, ::Missing) = missing
     (&)(a::Missing, b::Bool) = ifelse(b, missing, false)
