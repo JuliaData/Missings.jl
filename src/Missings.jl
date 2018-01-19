@@ -80,7 +80,7 @@ else
     end
 
     # Unary operators/functions
-    for f in (:(!), :(+), :(-), :(Base.identity), :(Base.zero), :(Base.one), :(Base.oneunit),
+    for f in (:(!), :(+), :(-), :(~), :(Base.identity), :(Base.zero), :(Base.one), :(Base.oneunit),
             :(Base.abs), :(Base.abs2), :(Base.sign),
             :(Base.acos), :(Base.acosh), :(Base.asin), :(Base.asinh), :(Base.atan), :(Base.atanh),
             :(Base.sin), :(Base.sinh), :(Base.cos), :(Base.cosh), :(Base.tan), :(Base.tanh),
@@ -124,8 +124,6 @@ else
     (^)(::Missing, ::Integer) = missing
 
     # Bit operators
-    Base.:(~)(::Missing) = missing
-    Base.:(~)(a::Missing) = missing
     (&)(::Missing, ::Missing) = missing
     (&)(a::Missing, b::Bool) = ifelse(b, missing, false)
     (&)(b::Bool, a::Missing) = ifelse(b, missing, false)
