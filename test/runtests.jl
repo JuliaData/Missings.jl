@@ -42,9 +42,10 @@ using Compat.Test, Compat.SparseArrays, Missings, Compat
     rounding_functions = [ceil, floor, round, trunc]
 
     # All unary operators return missing when evaluating missing
-    for f in [!, ~, +, -]
+    for f in [!,+, -]
         @test ismissing(f(missing))
     end
+    @test ismissing(~missing)
 
     # All elementary functions return missing when evaluating missing
     for f in elementary_functions
