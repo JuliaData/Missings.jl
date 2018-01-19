@@ -27,7 +27,7 @@ if VERSION < v"0.7.0-DEV.2762"
     end
 end
 
-import Base: ==, !=, <, *, <=, !, +, -, ^, /, &, |, xor
+import Base: ==, !=, <, *, <=, !, +, -, ^, /, ~, &, |, xor
 
 if VERSION >= v"0.7.0-DEV.2762"
     using Base: ismissing, missing, Missing, MissingException
@@ -124,6 +124,8 @@ else
     (^)(::Missing, ::Integer) = missing
 
     # Bit operators
+    (~)(::Missing) = missing
+    (~)(a::Missing) = missing
     (&)(::Missing, ::Missing) = missing
     (&)(a::Missing, b::Bool) = ifelse(b, missing, false)
     (&)(b::Bool, a::Missing) = ifelse(b, missing, false)
