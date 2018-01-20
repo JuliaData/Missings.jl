@@ -437,41 +437,43 @@ end
 # Deprecations
 @deprecate skip(itr) skipmissing(itr) false
 
-"""
-    coalesce(x, y...)
+if !isdefined(Base, :coalesce)
+    """
+        coalesce(x, y...)
 
-Return the first non-`missing` value in the arguments, or `missing` if all arguments are `missing`.
+    Return the first non-`missing` value in the arguments, or `missing` if all arguments are `missing`.
 
-In its broadcasted form, this function can be used to replace all missing values
-in an array with a given value (see examples).
+    In its broadcasted form, this function can be used to replace all missing values
+    in an array with a given value (see examples).
 
-# Examples
+    # Examples
 
-```jldoctest
-julia> coalesce(missing, 1)
-1
+    ```jldoctest
+    julia> coalesce(missing, 1)
+    1
 
-julia> coalesce(1, missing)
-1
+    julia> coalesce(1, missing)
+    1
 
-julia> coalesce(missing, missing)
-missing
+    julia> coalesce(missing, missing)
+    missing
 
-julia> coalesce.([missing, 1, missing], 0)
-3-element Array{$Int,1}:
- 0
- 1
- 0
+    julia> coalesce.([missing, 1, missing], 0)
+    3-element Array{$Int,1}:
+     0
+     1
+     0
 
-julia> coalesce.([missing, 1, missing], [0, 10, 5])
-3-element Array{$Int,1}:
- 0
- 1
- 5
+    julia> coalesce.([missing, 1, missing], [0, 10, 5])
+    3-element Array{$Int,1}:
+     0
+     1
+     5
 
-```
-"""
-Compat.coalesce(x::Missing) = missing
-Compat.coalesce(x::Missing, y...) = coalesce(y...)
+    ```
+    """
+    Compat.coalesce(x::Missing) = missing
+    Compat.coalesce(x::Missing, y...) = coalesce(y...)
+end
 
 end # module
