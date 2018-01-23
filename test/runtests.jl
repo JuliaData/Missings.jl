@@ -263,6 +263,8 @@ using Compat.Test, Compat.SparseArrays, Missings, Compat
     @test isequal(missings(Union{Int, Missing}, 1, 2), [missing missing])
     @test missings(Union{Int, Missing}, 1, 2) isa Matrix{Union{Int, Missing}}
     @test Union{Int, Missing}[1,2,3] == (Union{Int, Missing})[1,2,3]
+    @test isequal(missings(Int, (1, 2)), [missing missing])
+    @test isequal(missings((1, 2)), [missing missing])
 
     @test allowmissing([1]) == [1]
     @test allowmissing([1]) isa AbstractVector{Union{Int, Missing}}
