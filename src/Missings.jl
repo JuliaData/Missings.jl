@@ -4,7 +4,7 @@ module Missings
 using Compat
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
-       Missing, MissingException, levels, coalesce 
+       Missing, MissingException, levels, coalesce
 
 if VERSION < v"0.7.0-DEV.2762"
     """
@@ -216,9 +216,11 @@ T(::Type{T1}) where {T1} = T1
 T(::Type{Any}) = Any
 
 # vector constructors
-missings(dims...) = fill(missing, dims)
-missings(::Type{T}, dims...) where {T >: Missing} = fill!(Array{T}(uninitialized, dims), missing)
-missings(::Type{T}, dims...) where {T} = fill!(Array{Union{T, Missing}}(uninitialized, dims), missing)
+missings(dims::Dims) = fill(missing, dims)
+missings(::Type{T}, dims::Dims) where {T >: Missing} = fill!(Array{T}(uninitialized, dims), missing)
+missings(::Type{T}, dims::Dims) where {T} = fill!(Array{Union{T, Missing}}(uninitialized, dims), missing)
+missings(dims::Integer...) = missings(dims)
+missings(::Type{T}, dims::Integer...) where {T} = missings(T, dims)
 
 """
     allowmissing(x::AbstractArray)
