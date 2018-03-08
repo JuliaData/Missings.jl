@@ -19,7 +19,7 @@ if VERSION < v"0.7.0-DEV.2762"
         MissingException(msg)
 
     Exception thrown when a [`missing`](@ref) value is encountered in a situation
-    where it is not ƒpported. The error message, in the `msg` field
+    where it is not supported. The error message, in the `msg` field
     may provide more specific details.
     """
     struct MissingException <: Exception
