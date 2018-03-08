@@ -1,4 +1,4 @@
-using Compat.Test, Compat.SparseArrays, Missings, Compat
+using Compat, Compat.Test, Compat.SparseArrays, Compat.InteractiveUtils, Missings
 
 @testset "Missings" begin
     # test promote rules
@@ -36,7 +36,7 @@ using Compat.Test, Compat.SparseArrays, Missings, Compat
                             iseven, isodd, ispow2,
                             isfinite, isinf, isnan, iszero,
                             isinteger, isreal,
-                            isempty, transpose, float]
+                            transpose, float]
     VERSION < v"0.7.0-DEV" && push!(elementary_functions, isimag)
 
     rounding_functions = [ceil, floor, round, trunc]
@@ -230,7 +230,11 @@ using Compat.Test, Compat.SparseArrays, Missings, Compat
     @test coalesce.([missing, 1, missing], [0, 10, 5]) isa Vector{Int}
     @test isequal(coalesce.([missing, 1, missing], [0, missing, missing]), [0, 1, missing])
     # Fails in Julia 0.6 and 0.7.0-DEV.1556
-    @test_broken coalesce.([missing, 1, missing], [0, missing, missing]) isa Vector{Union{Missing, Int}}
+    if VERSION >= v"0.7.0-DEV.4493"
+        @test coalesce.([missing, 1, missing], [0, missing, missing]) isa Vector{Union{Missing, Int}}
+    else
+        @test_broken coalesce.([missing, 1, missing], [0, missing, missing]) isa Vector{Union{Missing, Int}}
+    end
 
     @test levels(1:1) == levels([1]) == levels([1, missing]) == levels([missing, 1]) == [1]
     @test levels(2:-1:1) == levels([2, 1]) == levels([2, missing, 1]) == [1, 2]
