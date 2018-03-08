@@ -430,7 +430,7 @@ actually occur in the data, and does not preserve their order of appearance in `
 function levels(x)
     T = Missings.T(eltype(x))
     levs = convert(AbstractArray{T}, filter!(!ismissing, unique(x)))
-    if method_exists(isless, Tuple{T, T})
+    if hasmethod(isless, Tuple{T, T})
         try; sort!(levs); end
     end
     levs
