@@ -260,6 +260,7 @@ using Compat, Compat.Test, Compat.SparseArrays, Compat.InteractiveUtils, Missing
     @test Missings.T(Union{Int, Missing}) == Int
     @test Missings.T(Any) == Any
     @test Missings.T(Missing) == Union{}
+    @test Missings.T(Union{Array{Int}, Missing}) == Array{Int}
 
     @test isequal(missings(1), [missing])
     @test isequal(missings(Int, 1), [missing])
