@@ -116,7 +116,7 @@ else
             ($f)(::Missing, digits::Integer=0, base::Integer=0) = missing
             ($f)(::Type{>:Missing}, ::Missing) = missing
             ($f)(::Type{T}, ::Missing) where {T} =
-                throw(MissingException("cannot convert a missing value to type $T"))
+                throw(MissingException("cannot convert a missing value to type $T: use Union{$T, Missing} instead"))
         end
     end
 
@@ -210,6 +210,18 @@ end
     Base.adjoint(::Missing) = missing
 end
 
+if VERSION < v"0.7.0-DEV.3711"
+    # Rounding and related functions from non-Missing type to Union{T, Missing}
+    for f in (:(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc))
+        @eval begin
+            ($f)(::Type{T}, x::Any) where {T>:Missing} = $f(Missings.T(T), x)
+            # to fix ambiguities
+            ($f)(::Type{T}, x::Rational) where {T>:Missing} = $f(Missings.T(T), x)
+            ($f)(::Type{T}, x::Rational{Bool}) where {T>:Missing} = $f(Missings.T(T), x)
+        end
+    end
+end
+
 if VERSION > v"0.7.0-DEV.3420"
     T(::Type{S}) where {S} = Core.Compiler.typesubtract(S, Missing)
 else
@@ -218,8 +230,8 @@ end
 
 # vector constructors
 missings(dims::Dims) = fill(missing, dims)
-missings(::Type{T}, dims::Dims) where {T >: Missing} = fill!(Array{T}(uninitialized, dims), missing)
-missings(::Type{T}, dims::Dims) where {T} = fill!(Array{Union{T, Missing}}(uninitialized, dims), missing)
+missings(::Type{T}, dims::Dims) where {T >: Missing} = fill!(Array{T}(undef, dims), missing)
+missings(::Type{T}, dims::Dims) where {T} = fill!(Array{Union{T, Missing}}(undef, dims), missing)
 missings(dims::Integer...) = missings(dims)
 missings(::Type{T}, dims::Integer...) where {T} = missings(T, dims)
 
