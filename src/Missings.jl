@@ -217,8 +217,8 @@ T(::Type{Any}) = Any
 
 # vector constructors
 missings(dims::Dims) = fill(missing, dims)
-missings(::Type{T}, dims::Dims) where {T >: Missing} = fill!(Array{T}(uninitialized, dims), missing)
-missings(::Type{T}, dims::Dims) where {T} = fill!(Array{Union{T, Missing}}(uninitialized, dims), missing)
+missings(::Type{T}, dims::Dims) where {T >: Missing} = fill!(Array{T}(undef, dims), missing)
+missings(::Type{T}, dims::Dims) where {T} = fill!(Array{Union{T, Missing}}(undef, dims), missing)
 missings(dims::Integer...) = missings(dims)
 missings(::Type{T}, dims::Integer...) where {T} = missings(T, dims)
 
