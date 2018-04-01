@@ -222,10 +222,11 @@ if VERSION < v"0.7.0-DEV.3711"
     end
 end
 
-T(::Type{Union{T1, Missing}}) where {T1} = T1
-T(::Type{Missing}) = Union{}
-T(::Type{T1}) where {T1} = T1
-T(::Type{Any}) = Any
+if VERSION > v"0.7.0-DEV.3420"
+    T(::Type{S}) where {S} = Core.Compiler.typesubtract(S, Missing)
+else
+    T(::Type{S}) where {S} = Core.Inference.typesubtract(S, Missing)
+end
 
 # vector constructors
 missings(dims::Dims) = fill(missing, dims)
