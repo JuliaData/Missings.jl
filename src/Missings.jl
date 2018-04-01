@@ -116,7 +116,7 @@ else
             ($f)(::Missing, digits::Integer=0, base::Integer=0) = missing
             ($f)(::Type{>:Missing}, ::Missing) = missing
             ($f)(::Type{T}, ::Missing) where {T} =
-                throw(MissingException("cannot convert a missing value to type $T"))
+                throw(MissingException("cannot convert a missing value to type $T: use Union{$T, Missing} instead"))
         end
     end
 
@@ -208,6 +208,18 @@ end
 
 @static if isdefined(Base, :adjoint) && !applicable(adjoint, missing)
     Base.adjoint(::Missing) = missing
+end
+
+if VERSION < v"0.7.0-DEV.3711"
+    # Rounding and related functions from non-Missing type to Union{T, Missing}
+    for f in (:(Base.ceil), :(Base.floor), :(Base.round), :(Base.trunc))
+        @eval begin
+            ($f)(::Type{T}, x::Any) where {T>:Missing} = $f(Missings.T(T), x)
+            # to fix ambiguities
+            ($f)(::Type{T}, x::Rational) where {T>:Missing} = $f(Missings.T(T), x)
+            ($f)(::Type{T}, x::Rational{Bool}) where {T>:Missing} = $f(Missings.T(T), x)
+        end
+    end
 end
 
 T(::Type{Union{T1, Missing}}) where {T1} = T1

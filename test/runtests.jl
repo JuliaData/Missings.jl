@@ -62,6 +62,7 @@ using Compat, Compat.Test, Compat.SparseArrays, Compat.InteractiveUtils, Missing
         @test ismissing(f(missing, 1))
         @test ismissing(f(missing, 1, 1))
         @test ismissing(f(Union{Int, Missing}, missing))
+        @test f(Union{Int, Missing}, 1.0) === 1
         @test_throws MissingException f(Int, missing)
     end
 
