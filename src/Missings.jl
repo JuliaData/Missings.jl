@@ -225,6 +225,9 @@ end
 if VERSION > v"0.7.0-DEV.3420"
     T(::Type{S}) where {S} = Core.Compiler.typesubtract(S, Missing)
 else
+    T(::Type{Union{T1, Missing}}) where {T1} = T1
+    T(::Type{Missing}) = Union{}
+    T(::Type{Any}) = Any
     T(::Type{S}) where {S} = Core.Inference.typesubtract(S, Missing)
 end
 
