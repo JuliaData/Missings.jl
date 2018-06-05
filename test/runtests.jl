@@ -142,7 +142,11 @@ using Compat, Compat.Test, Compat.SparseArrays, Compat.InteractiveUtils, Missing
     @test ismissing(missing * "a")
 
     @test sprint(show, missing) == "missing"
-    @test sprint(showcompact, missing) == "missing"
+    @static if VERSION < v"0.7.0-DEV.4517"
+        @test sprint(showcompact, missing) == "missing"
+    else
+        @test sprint(show, missing; context=:compact => true) == "missing"
+    end
     @test sprint(show, [missing]) == "$Missing[missing]"
     @test sprint(show, [1 missing]) == "$(Union{Int, Missing})[1 missing]"
     b = IOBuffer()
