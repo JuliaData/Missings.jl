@@ -447,7 +447,10 @@ function levels(x)
     T = Missings.T(eltype(x))
     levs = convert(AbstractArray{T}, filter!(!ismissing, unique(x)))
     if hasmethod(isless, Tuple{T, T})
-        try; sort!(levs); end
+        try
+            sort!(levs)
+        catch
+        end
     end
     levs
 end
