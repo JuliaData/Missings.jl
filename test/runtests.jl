@@ -1,4 +1,4 @@
-using Compat, Compat.Test, Compat.SparseArrays, Compat.InteractiveUtils, Missings
+using Test, Dates, InteractiveUtils, SparseArrays, Missings
 
 @testset "Missings" begin
     # test promote rules
@@ -17,11 +17,7 @@ using Compat, Compat.Test, Compat.SparseArrays, Compat.InteractiveUtils, Missing
     @test promote_type(Union{Int, Missing}, Union{Int, Missing}) == Union{Int, Missing}
     @test promote_type(Union{Float64, Missing}, Union{String, Missing}) == Any
     @test promote_type(Union{Float64, Missing}, Union{Int, Missing}) == Union{Float64, Missing}
-    if VERSION < v"0.7.0-"
-    @test promote_type(Union{Nothing, Missing, Int}, Float64) == Any
-    else
     @test_broken promote_type(Union{Nothing, Missing, Int}, Float64) == Any
-    end
 
     bit_operators = [&, |, ⊻]
 
@@ -37,7 +33,6 @@ using Compat, Compat.Test, Compat.SparseArrays, Compat.InteractiveUtils, Missing
                             isfinite, isinf, isnan, iszero,
                             isinteger, isreal,
                             transpose, float]
-    VERSION < v"0.7.0-DEV" && push!(elementary_functions, isimag)
 
     rounding_functions = [ceil, floor, round, trunc]
 
@@ -50,11 +45,7 @@ using Compat, Compat.Test, Compat.SparseArrays, Compat.InteractiveUtils, Missing
     for f in elementary_functions
         @test ismissing(f(missing))
     end
-    @static if isdefined(Base, :adjoint)
-        @test ismissing(adjoint(missing))
-    else
-        @test ismissing(ctranspose(missing))
-    end
+    @test ismissing(adjoint(missing))
 
     # All rounding functions return missing when evaluating missing as first argument
     for f in rounding_functions
@@ -72,8 +63,8 @@ using Compat, Compat.Test, Compat.SparseArrays, Compat.InteractiveUtils, Missing
         @test oneunit(Union{T, Missing}) === T(1)
     end
 
-    for T in (subtypes(Compat.Dates.DatePeriod)...,
-              subtypes(Compat.Dates.TimePeriod)...)
+    for T in (subtypes(Dates.DatePeriod)...,
+              subtypes(Dates.TimePeriod)...)
         @test zero(Union{T, Missing}) === T(0)
         @test one(Union{T, Missing}) === 1
         @test oneunit(Union{T, Missing}) === T(1)
@@ -142,11 +133,7 @@ using Compat, Compat.Test, Compat.SparseArrays, Compat.InteractiveUtils, Missing
     @test ismissing(missing * "a")
 
     @test sprint(show, missing) == "missing"
-    @static if VERSION < v"0.7.0-DEV.4517"
-        @test sprint(showcompact, missing) == "missing"
-    else
-        @test sprint(show, missing; context=:compact => true) == "missing"
-    end
+    @test sprint(show, missing; context=:compact => true) == "missing"
     @test sprint(show, [missing]) == "$Missing[missing]"
     @test sprint(show, [1 missing]) == "$(Union{Int, Missing})[1 missing]"
     b = IOBuffer()
@@ -234,12 +221,7 @@ using Compat, Compat.Test, Compat.SparseArrays, Compat.InteractiveUtils, Missing
     @test coalesce.([missing, 1, missing], [0, 10, 5]) == [0, 1, 5]
     @test coalesce.([missing, 1, missing], [0, 10, 5]) isa Vector{Int}
     @test isequal(coalesce.([missing, 1, missing], [0, missing, missing]), [0, 1, missing])
-    # Fails in Julia 0.6 and 0.7.0-DEV.1556
-    if VERSION >= v"0.7.0-DEV.4493"
-        @test coalesce.([missing, 1, missing], [0, missing, missing]) isa Vector{Union{Missing, Int}}
-    else
-        @test_broken coalesce.([missing, 1, missing], [0, missing, missing]) isa Vector{Union{Missing, Int}}
-    end
+    @test coalesce.([missing, 1, missing], [0, missing, missing]) isa Vector{Union{Missing, Int}}
 
     @test levels(1:1) == levels([1]) == levels([1, missing]) == levels([missing, 1]) == [1]
     @test levels(2:-1:1) == levels([2, 1]) == levels([2, missing, 1]) == [1, 2]
