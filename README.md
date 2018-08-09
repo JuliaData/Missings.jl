@@ -20,6 +20,9 @@ julia> Pkg.add("Missings")
 
 The package is tested against the current Julia `0.6` release and nightly on Linux, OS X, and Windows.
 
+Starting from Julia `0.7` the `Missing` type and basic functionalities related to it have been merged to core Julia.
+This package still provides additional features to handle `missing` values.
+
 ## Contributing and Questions
 
 Contributions are very welcome, as are feature requests and suggestions. Please open an
