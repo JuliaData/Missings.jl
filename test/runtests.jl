@@ -355,4 +355,10 @@ using Test, Dates, InteractiveUtils, SparseArrays, Missings
 
     # MissingException
     @test sprint(showerror, MissingException("test")) == "MissingException: test"
+
+    # Lifting
+    fun1 = conditional(x -> x ≥ 0, sqrt, x -> sqrt(complex(x)));
+    @test fun1(4) === 2.0
+    @test fun1(-4) === 2.0im
+    @test isequal(passmissing(sqrt).([missing, 4]), [missing, 2.0])
 end

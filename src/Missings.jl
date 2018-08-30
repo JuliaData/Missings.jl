@@ -1,7 +1,8 @@
 module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
-       Missing, MissingException, levels, coalesce
+       Missing, MissingException, levels, coalesce,
+       conditional, passmissing
 
 using Base: ismissing, missing, Missing, MissingException
 
@@ -164,5 +165,47 @@ function levels(x)
     end
     levs
 end
+
+struct Conditional{P,X,Y} <: Function end
+
+"""
+    conditional(predicate, x, y)
+
+Return a function that that applies function `predicate` to its positional and keyword
+arguments and returns the value of `x` applied to those arguments if `predicate`
+returns true and otherwise returns the value of `y` applied to those arguments.
+
+# Examples
+```jldoctest
+julia> f = conditional(x -> x ≥ 0, sqrt, x -> sqrt(complex(x)));
+
+julia> f.([4, -4])
+2-element Array{Number,1}:
+     2.0
+      0.0 + 2.0im
+"""
+conditional(predicate::Function, x::Base.Callable, y::Base.Callable) =
+    Conditional{predicate, x, y}()
+(::Conditional{P,X,Y})(xs...;kw...) where {P,X,Y} =
+    P(xs...; kw...) ? X(xs...; kw...) : Y(xs...; kw...)
+
+_passmissing_predicate(xs...;kw...) =
+    any(ismissing.(xs)) || any(ismissing.(values(values(kw))))
+_passmissing_value(xs...;kw...) = missing
+
+"""
+    passmissing(f)
+
+Return a function that returns `missing` if any of its positional or keyword arguments
+are `missing` and otherwise applies `f` to those arguments.
+
+# Examples
+```jldoctest
+julia> passmissing(sqrt).([missing, 4])
+2-element Array{Union{Missing, Float64},1}:
+  missing
+   2.0
+"""
+passmissing(f) = conditional(_passmissing_predicate, _passmissing_value, f)
 
 end # module
