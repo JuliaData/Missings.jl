@@ -167,8 +167,8 @@ end
 
 struct PassMissing{F} <: Function end
 
-(::PassMissing{F})(xs...;kw...) where {F} =
-     any(ismissing, xs) || any(ismissing, values(values(kw))) ? missing : F(xs...; kw...)
+@generated (::PassMissing{F})(xs...;kw...) where {F} =
+    :(any(ismissing, xs) || any(ismissing, values(values(kw))) ? missing : F(xs...; kw...))
 
 """
     passmissing(f)
