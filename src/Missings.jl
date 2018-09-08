@@ -178,6 +178,12 @@ are `missing` and otherwise applies `f` to those arguments.
 
 # Examples
 ```jldoctest
+julia> passmissing(sqrt)(4)
+2.0
+
+julia> passmissing(sqrt)(missing)
+missing
+
 julia> passmissing(sqrt).([missing, 4])
 2-element Array{Union{Missing, Float64},1}:
   missing
