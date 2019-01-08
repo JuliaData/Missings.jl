@@ -208,10 +208,10 @@ julia> passmissing(sqrt).([missing, 4])
   missing
    2.0
 
-julia> passmissing((x,y)->"$x $y")(1, 2)
+julia> passmissing((x,y)->"\$x \$y")(1, 2)
 "1 2"
 
-julia> passmissing((x,y)->"$x $y")(missing)
+julia> passmissing((x,y)->"\$x \$y")(missing)
 missing
 """
 passmissing(f::Base.Callable) = PassMissing{typeof(f)}(f)
