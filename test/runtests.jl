@@ -357,6 +357,9 @@ using Test, Dates, InteractiveUtils, SparseArrays, Missings
     @test sprint(showerror, MissingException("test")) == "MissingException: test"
 
     # Lifting
+    @test passmissing(sqrt)(4) == 2.0
+    @test isequal(passmissing(sqrt)(missing), missing)
     @test isequal(passmissing(sqrt).([missing, 4]), [missing, 2.0])
-    @test isequal(passmissing(parse)(Int, "a", base=missing), missing)
+    @test passmissing((x,y)->"$x $y")(1, 2) == "1 2"
+    @test isequal(passmissing((x,y)->"$x $y")(missing), missing)
 end

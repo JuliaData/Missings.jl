@@ -165,16 +165,35 @@ function levels(x)
     levs
 end
 
-struct PassMissing{F} <: Function end
+struct PassMissing{F} <: Function
+    f::F
+end
 
-@generated (::PassMissing{F})(xs...;kw...) where {F} =
-    :(any(ismissing, xs) || any(ismissing, values(values(kw))) ? missing : F(xs...; kw...))
+function (f::PassMissing{F})(x) where {F}
+    if @generated
+        return x === Missing ? missing : :(f.f(x))
+    else
+        return x === missing ? missing : f.f(x)
+    end
+end
+
+function (f::PassMissing{F})(xs...) where {F}
+    if @generated
+        for T in xs
+            T === Missing && return missing
+        end
+        return :(f.f(xs...))
+    else
+        return any(ismissing, xs) ? missing : f.f(xs...)
+    end
+end
 
 """
     passmissing(f)
 
-Return a function that returns `missing` if any of its positional or keyword arguments
-are `missing` and otherwise applies `f` to those arguments.
+Return a function that returns `missing` if any of its positional arguments
+are `missing` (even if their number or type is not consistent with any of the
+methods defined for `f`) and otherwise applies `f` to these arguments.
 
 # Examples
 ```jldoctest
@@ -188,7 +207,13 @@ julia> passmissing(sqrt).([missing, 4])
 2-element Array{Union{Missing, Float64},1}:
   missing
    2.0
+
+julia> passmissing((x,y)->"$x $y")(1, 2)
+"1 2"
+
+julia> passmissing((x,y)->"$x $y")(missing)
+missing
 """
-passmissing(f::Base.Callable) = PassMissing{f}()
+passmissing(f::Base.Callable) = PassMissing{typeof(f)}(f)
 
 end # module
