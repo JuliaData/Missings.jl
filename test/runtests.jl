@@ -362,4 +362,5 @@ using Test, Dates, InteractiveUtils, SparseArrays, Missings
     @test isequal(passmissing(sqrt).([missing, 4]), [missing, 2.0])
     @test passmissing((x,y)->"$x $y")(1, 2) == "1 2"
     @test isequal(passmissing((x,y)->"$x $y")(missing), missing)
+    @test_throws ErrorException passmissing(string)(missing, base=2)
 end

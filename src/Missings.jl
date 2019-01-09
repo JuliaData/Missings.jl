@@ -195,6 +195,8 @@ Return a function that returns `missing` if any of its positional arguments
 are `missing` (even if their number or type is not consistent with any of the
 methods defined for `f`) and otherwise applies `f` to these arguments.
 
+`passmissing` does not support passing keyword arguments to the `f` function.
+
 # Examples
 ```jldoctest
 julia> passmissing(sqrt)(4)
