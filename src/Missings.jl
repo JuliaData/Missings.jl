@@ -1,7 +1,7 @@
 module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
-       Missing, MissingException, levels, coalesce
+       Missing, MissingException, levels, coalesce, passmissing
 
 using Base: ismissing, missing, Missing, MissingException
 
@@ -164,5 +164,58 @@ function levels(x)
     end
     levs
 end
+
+struct PassMissing{F} <: Function
+    f::F
+end
+
+function (f::PassMissing{F})(x) where {F}
+    if @generated
+        return x === Missing ? missing : :(f.f(x))
+    else
+        return x === missing ? missing : f.f(x)
+    end
+end
+
+function (f::PassMissing{F})(xs...) where {F}
+    if @generated
+        for T in xs
+            T === Missing && return missing
+        end
+        return :(f.f(xs...))
+    else
+        return any(ismissing, xs) ? missing : f.f(xs...)
+    end
+end
+
+"""
+    passmissing(f)
+
+Return a function that returns `missing` if any of its positional arguments
+are `missing` (even if their number or type is not consistent with any of the
+methods defined for `f`) and otherwise applies `f` to these arguments.
+
+`passmissing` does not support passing keyword arguments to the `f` function.
+
+# Examples
+```jldoctest
+julia> passmissing(sqrt)(4)
+2.0
+
+julia> passmissing(sqrt)(missing)
+missing
+
+julia> passmissing(sqrt).([missing, 4])
+2-element Array{Union{Missing, Float64},1}:
+  missing
+   2.0
+
+julia> passmissing((x,y)->"\$x \$y")(1, 2)
+"1 2"
+
+julia> passmissing((x,y)->"\$x \$y")(missing)
+missing
+"""
+passmissing(f::Base.Callable) = PassMissing{typeof(f)}(f)
 
 end # module
