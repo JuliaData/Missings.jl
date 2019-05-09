@@ -1,4 +1,4 @@
-using Test, Dates, InteractiveUtils, SparseArrays, Missings
+using Test, SparseArrays, Missings
 
 @testset "Missings" begin
     x = Missings.replace([1, 2, missing, 4], 3)
