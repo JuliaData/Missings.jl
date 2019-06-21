@@ -57,7 +57,7 @@ The package defines standard operators and functions which propagate `missing` v
 
 In many cases, `missing` values will have to be skipped or replaced with a valid value. For example, `sum([1, missing])` returns `missing` due to the behavior of `+`. Use `sum(Missings.skip([1, missing])` to ignore `missing` values. `sum(Missings.replace([1, missing], 0))` would have the same effect. `Missings.fail` throws an error if any value is found while iterating over the data. These three functions return an iterator and therefore do not need to allocate a copy of the data. Finally, the `Missings.coalesce` function is a more complex and powerful version of `Missings.replace`.
 
-When parsing a string fails, `tryparse` function returns `nothing`. It can be useful to be able to replace `nothing` by missing. It can be done using:
+When parsing a string fails, `tryparse` function returns `nothing`. It can be useful to replace `nothing` by `missing`. It can be done using:
 
 ```julia
 julia> something(tryparse(Float64, "1.2"), missing)
