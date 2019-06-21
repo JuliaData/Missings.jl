@@ -56,3 +56,15 @@ Missings.jl provides a single type `Missing` with a single instance `missing` wh
 The package defines standard operators and functions which propagate `missing` values: for example `1 + missing` and `cos(missing)` both return `missing`. In particular, note that comparison operators `==`, `<`, `>`, `<=` and `=>` (but not `isequal` nor `isless`) also propagate `missing`, so that `1 == missing` and `missing == missing` both return `missing`. Use `ismissing` to test whether a value is `missing`. Logical operators `&`, `|`, `⊻`/`xor` implement [three-valued logic](https://en.wikipedia.org/wiki/Three-valued_logic): they return `missing` only when the result cannot be determined. For example, `true & missing` returns `missing` but `true | missing` returns `true`.
 
 In many cases, `missing` values will have to be skipped or replaced with a valid value. For example, `sum([1, missing])` returns `missing` due to the behavior of `+`. Use `sum(Missings.skip([1, missing])` to ignore `missing` values. `sum(Missings.replace([1, missing], 0))` would have the same effect. `Missings.fail` throws an error if any value is found while iterating over the data. These three functions return an iterator and therefore do not need to allocate a copy of the data. Finally, the `Missings.coalesce` function is a more complex and powerful version of `Missings.replace`.
+
+When parsing a string fails, `tryparse` function returns `nothing`. It can be useful to replace `nothing` by `missing`. It can be done using:
+
+```julia
+julia> something(tryparse(Float64, "1.2"), missing)
+1.2
+
+julia> something(tryparse(Float64, "-"), missing)
+missing
+```
+
+`something` function is to `nothing` what `Missings.coalesce` function is to `missing`.
