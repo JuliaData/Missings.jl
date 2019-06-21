@@ -67,4 +67,4 @@ julia> something(tryparse(Float64, "-"), missing)
 missing
 ```
 
-`something` is to `nothing` what `Missings.coalesce` is to `missing`.
+`something` function is to `nothing` what `Missings.coalesce` function is to `missing`.
