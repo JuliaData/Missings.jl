@@ -223,6 +223,6 @@ julia> passmissing((x,y)->"\$x \$y")(1, 2)
 julia> passmissing((x,y)->"\$x \$y")(missing)
 missing
 """
-passmissing(f::Base.Callable) = PassMissing{typeof(f)}(f)
+passmissing(f) = PassMissing{typeof(f)}(f)
 
 end # module
