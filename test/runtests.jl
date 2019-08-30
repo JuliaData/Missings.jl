@@ -88,8 +88,10 @@ using Test, SparseArrays, Missings
     @test Missings.nonmissingtype(Union{Array{Int}, Missing}) == Array{Int}
 
     @test isequal(missings(1), [missing])
+    @test isequal(missings(Any, 1), [missing])
     @test isequal(missings(Int, 1), [missing])
     @test missings(Int, 1) isa Vector{Union{Int, Missing}}
+    @test missings(Any, 1) isa Vector{Union{Any, Missing}}
     @test isequal(missings(Union{Int, Missing}, 1, 2), [missing missing])
     @test missings(Union{Int, Missing}, 1, 2) isa Matrix{Union{Int, Missing}}
     @test Union{Int, Missing}[1,2,3] == (Union{Int, Missing})[1,2,3]
