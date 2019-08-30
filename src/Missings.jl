@@ -4,8 +4,15 @@ export allowmissing, disallowmissing, ismissing, missing, missings,
        Missing, MissingException, levels, coalesce, passmissing
 
 using Base: ismissing, missing, Missing, MissingException
+using Base: @deprecate
 
-T(::Type{S}) where {S} = Core.Compiler.typesubtract(S, Missing)
+@static if VERSION < v"1.3.0-alpha.121"
+    nonmissingtype(::Type{S}) where {S} = Core.Compiler.typesubtract(S, Missing)
+else
+    using Base: nonmissingtype
+end
+
+@deprecate T nonmissingtype false
 
 # vector constructors
 missings(dims::Dims) = fill(missing, dims)
@@ -30,14 +37,14 @@ allowmissing(x::AbstractArray{T}) where {T} = convert(AbstractArray{Union{T, Mis
     disallowmissing(x::AbstractArray)
 
 Return an array equal to `x` not allowing for [`missing`](@ref) values,
-i.e. with an element type equal to `Missings.T(eltype(x))`.
+i.e. with an element type equal to `nonmissingtype(eltype(x))`.
 
 When possible, the result will share memory with `x` (as with [`convert`](@ref)).
 If `x` contains missing values, a `MethodError` is thrown.
 
 See also: [`allowmissing`](@ref)
 """
-disallowmissing(x::AbstractArray{T}) where {T} = convert(AbstractArray{Missings.T(T)}, x)
+disallowmissing(x::AbstractArray{T}) where {T} = convert(AbstractArray{nonmissingtype(T)}, x)
 
 # Iterators
 """
@@ -76,7 +83,7 @@ Base.IteratorEltype(::Type{<:EachReplaceMissing{T}}) where {T} =
     Base.IteratorEltype(T)
 Base.length(itr::EachReplaceMissing) = length(itr.x)
 Base.size(itr::EachReplaceMissing) = size(itr.x)
-Base.eltype(itr::EachReplaceMissing) = Missings.T(eltype(itr.x))
+Base.eltype(itr::EachReplaceMissing) = nonmissingtype(eltype(itr.x))
 
 @inline function Base.iterate(itr::EachReplaceMissing)
     st = iterate(itr.x)
@@ -125,7 +132,7 @@ Base.IteratorEltype(::Type{EachFailMissing{T}}) where {T} =
     Base.IteratorEltype(T)
 Base.length(itr::EachFailMissing) = length(itr.x)
 Base.size(itr::EachFailMissing) = size(itr.x)
-Base.eltype(itr::EachFailMissing) = Missings.T(eltype(itr.x))
+Base.eltype(itr::EachFailMissing) = nonmissingtype(eltype(itr.x))
 
 @inline function Base.iterate(itr::EachFailMissing)
     st = iterate(itr.x)
@@ -154,7 +161,7 @@ Contrary to [`unique`](@ref), this function may return values which do not
 actually occur in the data, and does not preserve their order of appearance in `x`.
 """
 function levels(x)
-    T = Missings.T(eltype(x))
+    T = nonmissingtype(eltype(x))
     levs = convert(AbstractArray{T}, filter!(!ismissing, unique(x)))
     if hasmethod(isless, Tuple{T, T})
         try
