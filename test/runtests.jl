@@ -151,6 +151,10 @@ using Test, SparseArrays, Missings
     @test isequal(passmissing((x,y)->"$x $y")(missing), missing)
     @test_throws ErrorException passmissing(string)(missing, base=2)
 
+    @test passmissing(sin) === Missings.PassMissing{typeof(sin)}(sin)
+    @test passmissing(Int) === Missings.PassMissing{Type{Int}}(Int)
+    @test passmissing(cuberoot) === Missings.PassMissing{CubeRooter}(cuberoot)
+
     @testset "deprecated" begin
         # The (unexported) `Missings.T` was deprecated to `Missings.nonmissingtype`
         for x in (Union{Int, Missing}, Any, Missing, Union{Array{Int}, Missing})
