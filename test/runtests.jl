@@ -1,5 +1,9 @@
 using Test, SparseArrays, Missings
 
+# Must be defined outside testset on v1.0
+struct CubeRooter end
+(::CubeRooter)(x) = cbrt(x)
+
 @testset "Missings" begin
     x = Missings.replace([1, 2, missing, 4], 3)
     @test eltype(x) === Int
@@ -140,9 +144,7 @@ using Test, SparseArrays, Missings
 
     # Lifting
     ## functor
-    struct CubeRooter end
-    (::CubeRooter)(x) = cbrt(x)
-    cuberoot = CubeRooter()
+    cuberoot = CubeRooter()  # defined at top of file
     @test passmissing(cuberoot)(27) == 3.0
     @test isequal(passmissing(cuberoot)(missing), missing)
     ## type
