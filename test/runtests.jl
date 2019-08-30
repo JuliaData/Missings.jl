@@ -139,11 +139,16 @@ using Test, SparseArrays, Missings
     @test_throws MethodError disallowmissing([missing missing])
 
     # Lifting
+    ## functor
     struct CubeRooter end
     (::CubeRooter)(x) = cbrt(x)
     cuberoot = CubeRooter()
     @test passmissing(cuberoot)(27) == 3.0
     @test isequal(passmissing(cuberoot)(missing), missing)
+    ## type
+    @test passmissing(Int)(1.0) == 1
+    @test isequal(passmissing(Int)(missing), missing)
+    ## function
     @test passmissing(sqrt)(4) == 2.0
     @test isequal(passmissing(sqrt)(missing), missing)
     @test isequal(passmissing(sqrt).([missing, 4]), [missing, 2.0])
