@@ -82,10 +82,10 @@ using Test, SparseArrays, Missings
     @test isempty(levels([missing]))
     @test isempty(levels([]))
 
-    @test Missings.T(Union{Int, Missing}) == Int
-    @test Missings.T(Any) == Any
-    @test Missings.T(Missing) == Union{}
-    @test Missings.T(Union{Array{Int}, Missing}) == Array{Int}
+    @test Missings.nonmissingtype(Union{Int, Missing}) == Int
+    @test Missings.nonmissingtype(Any) == Any
+    @test Missings.nonmissingtype(Missing) == Union{}
+    @test Missings.nonmissingtype(Union{Array{Int}, Missing}) == Array{Int}
 
     @test isequal(missings(1), [missing])
     @test isequal(missings(Int, 1), [missing])
@@ -143,4 +143,11 @@ using Test, SparseArrays, Missings
     @test passmissing((x,y)->"$x $y")(1, 2) == "1 2"
     @test isequal(passmissing((x,y)->"$x $y")(missing), missing)
     @test_throws ErrorException passmissing(string)(missing, base=2)
+
+    @testset "deprecated" begin
+        # The (unexported) `Missings.T` was deprecated to `Missings.nonmissingtype`
+        for x in (Union{Int, Missing}, Any, Missing, Union{Array{Int}, Missing})
+            @test Missings.T(x) == Missings.nonmissingtype(x)
+        end
+    end
 end
