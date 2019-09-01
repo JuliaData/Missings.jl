@@ -14,7 +14,7 @@ julia> using Pkg; Pkg.add("Missings")
 
 ## Project Status
 
-In Julia `v1` the `Missing` type and basic related functionality are part of the language.
+Starting from Julia 1.0, the `Missing` type and basic related functionality are part of the language.
 For documentation see [the Julia manual section on missing values](https://docs.julialang.org/en/v1/manual/missing/index.html).
 
 This package provides additional functionality for working with `missing` values:
