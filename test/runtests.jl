@@ -1,5 +1,9 @@
 using Test, SparseArrays, Missings
 
+# Must be defined outside testset on v1.0
+struct CubeRooter end
+(::CubeRooter)(x) = cbrt(x)
+
 @testset "Missings" begin
     x = Missings.replace([1, 2, missing, 4], 3)
     @test eltype(x) === Int
@@ -139,12 +143,24 @@ using Test, SparseArrays, Missings
     @test_throws MethodError disallowmissing([missing missing])
 
     # Lifting
+    ## functor
+    cuberoot = CubeRooter()  # defined at top of file
+    @test passmissing(cuberoot)(27) == 3.0
+    @test isequal(passmissing(cuberoot)(missing), missing)
+    ## type
+    @test passmissing(Int)(1.0) == 1
+    @test isequal(passmissing(Int)(missing), missing)
+    ## function
     @test passmissing(sqrt)(4) == 2.0
     @test isequal(passmissing(sqrt)(missing), missing)
     @test isequal(passmissing(sqrt).([missing, 4]), [missing, 2.0])
     @test passmissing((x,y)->"$x $y")(1, 2) == "1 2"
     @test isequal(passmissing((x,y)->"$x $y")(missing), missing)
     @test_throws ErrorException passmissing(string)(missing, base=2)
+
+    @test passmissing(sin) === Missings.PassMissing{typeof(sin)}(sin)
+    @test passmissing(Int) === Missings.PassMissing{Type{Int}}(Int)
+    @test passmissing(cuberoot) === Missings.PassMissing{CubeRooter}(cuberoot)
 
     @testset "deprecated" begin
         # The (unexported) `Missings.T` was deprecated to `Missings.nonmissingtype`
