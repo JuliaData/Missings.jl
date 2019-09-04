@@ -86,10 +86,10 @@ struct CubeRooter end
     @test isempty(levels([missing]))
     @test isempty(levels([]))
 
-    @test Missings.nonmissingtype(Union{Int, Missing}) == Int
-    @test Missings.nonmissingtype(Any) == Any
-    @test Missings.nonmissingtype(Missing) == Union{}
-    @test Missings.nonmissingtype(Union{Array{Int}, Missing}) == Array{Int}
+    @test nonmissingtype(Union{Int, Missing}) == Int
+    @test nonmissingtype(Any) == Any
+    @test nonmissingtype(Missing) == Union{}
+    @test nonmissingtype(Union{Array{Int}, Missing}) == Array{Int}
 
     @test isequal(missings(1), [missing])
     @test isequal(missings(Any, 1), [missing])
