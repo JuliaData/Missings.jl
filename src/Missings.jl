@@ -1,7 +1,7 @@
 module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
-       Missing, MissingException, levels, coalesce, passmissing
+       Missing, MissingException, levels, coalesce, passmissing, nonmissingtype
 
 using Base: ismissing, missing, Missing, MissingException
 using Base: @deprecate
