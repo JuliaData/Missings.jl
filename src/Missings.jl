@@ -12,6 +12,8 @@ else
     using Base: nonmissingtype
 end
 
+using DataAPI: levels
+
 @deprecate T nonmissingtype false
 
 # vector constructors
