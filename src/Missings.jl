@@ -12,7 +12,7 @@ else
     using Base: nonmissingtype
 end
 
-using DataAPI: levels
+import DataAPI
 
 @deprecate T nonmissingtype false
 
