@@ -12,6 +12,8 @@ else
     using Base: nonmissingtype
 end
 
+import DataAPI
+
 @deprecate T nonmissingtype false
 
 # vector constructors
@@ -150,27 +152,7 @@ end
     return (v::eltype(itr), s)
 end
 
-"""
-    levels(x)
-
-Return a vector of unique values which occur or could occur in collection `x`,
-omitting `missing` even if present. Values are returned in the preferred order
-for the collection, with the result of [`sort`](@ref) as a default.
-
-Contrary to [`unique`](@ref), this function may return values which do not
-actually occur in the data, and does not preserve their order of appearance in `x`.
-"""
-function levels(x)
-    T = nonmissingtype(eltype(x))
-    levs = convert(AbstractArray{T}, filter!(!ismissing, unique(x)))
-    if hasmethod(isless, Tuple{T, T})
-        try
-            sort!(levs)
-        catch
-        end
-    end
-    levs
-end
+const levels = DataAPI.levels
 
 struct PassMissing{F} <: Function
     f::F
