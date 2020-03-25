@@ -1,7 +1,7 @@
 module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
-       Missing, MissingException, levels, coalesce, passmissing, nonmissingtype
+       Missing, MissingException, levels, coalesce, passmissing, nonmissingtype, hasmissing
 
 using Base: ismissing, missing, Missing, MissingException
 using Base: @deprecate
@@ -206,5 +206,13 @@ julia> passmissing((x,y)->"\$x \$y")(missing)
 missing
 """
 passmissing(f) = PassMissing{Core.Typeof(f)}(f)
+
+
+"""
+    hasmissing(itr)
+
+Return `true` if `itr` contains `missing` elements. 
+"""
+hasmissing(itr) = eltype(itr) >: Missing && any(ismissing, itr)
 
 end # module
