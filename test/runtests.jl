@@ -166,6 +166,11 @@ struct CubeRooter end
     @test passmissing(Int) === Missings.PassMissing{Type{Int}}(Int)
     @test passmissing(cuberoot) === Missings.PassMissing{CubeRooter}(cuberoot)
 
+    
+    @test hasmissing([1, 2, 3, 4]) == false
+    @test hasmissing([1, 2, 3, missing, 5]) == true
+    @test hasmissing(skipmissing([1, 2, 3, missing, 5])) == false
+    
     @testset "deprecated" begin
         # The (unexported) `Missings.T` was deprecated to `Missings.nonmissingtype`
         for x in (Union{Int, Missing}, Any, Missing, Union{Array{Int}, Missing})
