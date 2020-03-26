@@ -216,5 +216,6 @@ Return `true` if `itr` contains `missing` elements, else `false`.
 See also: `ismissing`
 """
 hasmissing(itr) = eltype(itr) >: Missing && any(ismissing, itr)
+hasmissing(::Base.SkipMissing) = false 
 
 end # module
