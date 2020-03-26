@@ -170,6 +170,7 @@ struct CubeRooter end
     @test hasmissing([1, 2, 3, 4]) == false
     @test hasmissing([1, 2, 3, missing, 5]) == true
     @test hasmissing(skipmissing([1, 2, 3, missing, 5])) == false
+    @test hasmissing([]) == hasmissing(Missing[]) == false 
     
     @testset "deprecated" begin
         # The (unexported) `Missings.T` was deprecated to `Missings.nonmissingtype`
