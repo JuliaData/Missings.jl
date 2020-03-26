@@ -211,7 +211,9 @@ passmissing(f) = PassMissing{Core.Typeof(f)}(f)
 """
     hasmissing(itr) -> Bool
 
-Return `true` if `itr` contains `missing` elements. 
+Return `true` if `itr` contains `missing` elements, else `false`.
+
+See also: `ismissing`
 """
 hasmissing(itr) = eltype(itr) >: Missing && any(ismissing, itr)
 
