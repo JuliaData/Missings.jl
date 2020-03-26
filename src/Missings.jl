@@ -209,7 +209,7 @@ passmissing(f) = PassMissing{Core.Typeof(f)}(f)
 
 
 """
-    hasmissing(itr)
+    hasmissing(itr) -> Bool
 
 Return `true` if `itr` contains `missing` elements. 
 """
