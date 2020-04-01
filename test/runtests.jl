@@ -107,7 +107,7 @@ struct CubeRooter end
     @test isapprox(mapreduce(cos, *, collect(mx)),  mapreduce(cos, *, mx))
     if VERSION >= v"1.4.0-DEV"
         t = quote 
-            @inferred Union{Float64, Missing} mapreduce(cos, *, mx)
+            @inferred Union{Float64, Missing} mapreduce(cos, *, $mx)
         end
         eval(t)
     end
@@ -125,7 +125,7 @@ struct CubeRooter end
     @test sum(mx) === 1056
     if VERSION >= v"1.4.0-DEV"
         t = quote
-            @inferred Union{Missing, Int} sum(mx)
+            @inferred Union{Missing, Int} sum($mx)
         end
         eval(t)
     end
