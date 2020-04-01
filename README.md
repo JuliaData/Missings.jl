@@ -22,6 +22,7 @@ This package provides additional functionality for working with `missing` values
 - `allowmissing` and `disallowmissing` to convert between `Vector{T}` and `Vector{Union{T, Missing}}`
 - `passmissing` to wrap a function so that it returns `missing` if any of its positional arguments is `missing`
 - `levels` to get the unique values in a vector excluding `missing` and in their preferred order
+- `skipmissings` to loop through a collection of iterators excluding indi ces where any iterators are `missing`
 
 ## Contributing and Questions
 
