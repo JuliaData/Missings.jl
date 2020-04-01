@@ -167,10 +167,10 @@ struct CubeRooter end
     @test passmissing(cuberoot) === Missings.PassMissing{CubeRooter}(cuberoot)
 
     
-    @test hasmissing([1, 2, 3, 4]) == hasmissing(1:4) == false
-    @test hasmissing([1, 2, 3, missing, 5]) == true
-    @test hasmissing(skipmissing([1, 2, 3, missing, 5])) == false
-    @test hasmissing([]) == hasmissing(Missing[]) == false 
+    @test anymissing([1, 2, 3, 4]) == anymissing(1:4) == false
+    @test anymissing([1, 2, 3, missing, 5]) == true
+    @test anymissing(skipmissing([1, 2, 3, missing, 5])) == false
+    @test anymissing([]) == anymissing(Missing[]) == false 
     
     @testset "deprecated" begin
         # The (unexported) `Missings.T` was deprecated to `Missings.nonmissingtype`

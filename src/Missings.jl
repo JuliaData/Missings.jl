@@ -1,7 +1,7 @@
 module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
-       Missing, MissingException, levels, coalesce, passmissing, nonmissingtype, hasmissing
+       Missing, MissingException, levels, coalesce, passmissing, nonmissingtype, anymissing
 
 using Base: ismissing, missing, Missing, MissingException
 using Base: @deprecate
@@ -209,13 +209,13 @@ passmissing(f) = PassMissing{Core.Typeof(f)}(f)
 
 
 """
-    hasmissing(itr) -> Bool
+    anymissing(itr) -> Bool
 
 Return `true` if `itr` contains `missing` elements, else `false`.
 
 See also: `ismissing`
 """
-hasmissing(itr) = eltype(itr) >: Missing && any(ismissing, itr)
-hasmissing(::Base.SkipMissing) = false 
+anymissing(itr) = eltype(itr) >: Missing && any(ismissing, itr)
+anymissing(::Base.SkipMissing) = false
 
 end # module
