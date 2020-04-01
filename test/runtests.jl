@@ -120,7 +120,6 @@ struct CubeRooter end
     y = [isodd(i) ? missing : i for i in 65:128]
     mx, my = skipmissings(x, y)
     @test sum(mx) === 1056
-    @inferred Union{Missing, Int} sum(mx)
     if VERSION >= v"1.4.0-DEV"
         @inferred Union{Missing, Int} sum(mx)
     end
