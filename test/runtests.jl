@@ -84,8 +84,8 @@ struct CubeRooter end
     iobuf = IOBuffer()
     show(iobuf, MIME("text/plain"), mx)
     s = String(take!(iobuf))
-    @test s == "Missings.SkipMissings{Array{Union{Missing, Int$(Sys.WORD_SIZE)},1}}(Union{Missing, Int$(Sys.WORD_SIZE)" *
-        "}[1, 2, missing, 4]) comprised of 2 iterators"
+    @test s == "Missings.SkipMissings{Array{Union{Missing, $Int},1}}(" *
+        "Union{Missing, $Int}[1, 2, missing, 4]) comprised of 2 iterators"
     @test collect(mx) == [1, 2]
     @test collect(mx) isa Vector{Int} 
     @test reduce(+, mx) === reduce(+, collect(mx)) === sum(mx) ===
