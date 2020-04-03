@@ -1,7 +1,8 @@
 module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
-       Missing, MissingException, levels, coalesce, passmissing, nonmissingtype
+       Missing, MissingException, levels, coalesce, passmissing, nonmissingtype,
+       skipmissings
 
 using Base: ismissing, missing, Missing, MissingException
 using Base: @deprecate
@@ -206,5 +207,262 @@ julia> passmissing((x,y)->"\$x \$y")(missing)
 missing
 """
 passmissing(f) = PassMissing{Core.Typeof(f)}(f)
+
+"""
+   skipmissings(args...)
+
+Return a tuple of iterators wrapping each of the iterators in `args`, but
+skipping elements at positions where at least one of the iterators returns `missing`
+(listwise deletion of missing values).
+
+# Examples
+```
+julia> x = [1, 2, missing, 4]; y = [1, 2, 3, missing];
+
+julia> tx, ty = skipmissings(x, y)
+(Missings.SkipMissings{Array{Union{Missing, Int64},1},Tuple{Array{Union{Missing, Int64},1}}}
+(Union{Missing, Int64}[1, 2, missing, 4], (Union{Missing, Int64}[1, 2, 3, missing],)), Missi
+ngs.SkipMissings{Array{Union{Missing, Int64},1},Tuple{Array{Union{Missing, Int64},1}}}(Union
+{Missing, Int64}[1, 2, 3, missing], (Union{Missing, Int64}[1, 2, missing, 4],)))
+
+julia> collect(tx)
+2-element Array{Int64,1}:
+ 1
+ 2
+
+```
+"""
+function skipmissings(args...)
+    if isempty(args)
+        throw(ArgumentError("Must input one or more arguments"))
+    end
+
+    if args isa Tuple{Vararg{AbstractArray}}
+        if !all(x -> length(x) == length(args[1]), args)
+            throw(ArgumentError("All arguments must have the same length"))
+        end
+
+        if !all(x -> eachindex(x) == eachindex(args[1]), args)
+            throw(ArgumentError("All arguments must have the same indices"))
+        end
+    end
+
+    ntuple(length(args)) do i
+        s = setdiff(1:length(args), i)
+        SkipMissings(args[i], args[s])
+    end
+end
+
+struct SkipMissings{V, T}
+    x::V
+    others::T
+end
+
+Base.@propagate_inbounds function _anymissingindex(others::Tuple{Vararg{AbstractArray}}, i)    
+   for oth in others
+        oth[i] === missing && return true
+    end
+
+    return false
+end
+
+@inline function _anymissingiterate(others::Tuple, state)
+    for oth in others 
+        y = iterate(oth, state)
+        y !== nothing && first(y) === missing && return true
+    end
+
+    return false
+end
+
+const SkipMissingsofArrays = SkipMissings{V, T} where
+    {V <: AbstractArray, T <: Tuple{Vararg{AbstractArray}}}
+
+function Base.show(io::IO, mime::MIME"text/plain", itr::SkipMissings{V}) where V 
+    print(io, SkipMissings, '{', V, '}', '(', itr.x, ')', " comprised of " *
+          "$(length(itr.others) + 1) iterators")
+end
+
+Base.IteratorSize(::Type{<:SkipMissings}) = Base.SizeUnknown()
+Base.IteratorEltype(::Type{<:SkipMissings{V}}) where {V} = Base.IteratorEltype(V)
+Base.eltype(::Type{<:SkipMissings{V}}) where {V} = nonmissingtype(eltype(V))
+Base.IndexStyle(itr::SkipMissings) = Base.IndexStyle(itr.x)
+
+function Base.iterate(itr::SkipMissings, state=1)
+    x_itr = iterate(itr.x, state)
+    x_itr === nothing && return nothing
+    x_item, x_state = x_itr
+    while true
+        x_item === missing || _anymissingiterate(itr.others, state) || break
+        x_itr = iterate(itr.x, x_state)
+        x_itr === nothing && return nothing
+        state = x_state
+        x_item, x_state = x_itr
+    end
+    return x_item, x_state
+end
+
+function Base.iterate(itr::SkipMissingsofArrays, state=0)
+    eix = eachindex(itr.x)
+    ind_itr = iterate(eix, state)
+    ind_itr === nothing && return nothing
+    ind_item, ind_state = ind_itr
+    @inbounds x_item = itr.x[ind_item]
+    @inbounds while true
+        x_item === missing || _anymissingindex(itr.others, ind_item) || break
+        ind_itr = iterate(eix, ind_state)
+        ind_itr === nothing && return nothing
+        ind_item, ind_state = ind_itr
+        x_item = itr.x[ind_item]
+    end
+    return x_item, ind_state
+end
+
+Base.IndexStyle(::Type{<:SkipMissings{V}}) where {V} = Base.IndexStyle(V)
+
+function Base.eachindex(itr::SkipMissingsofArrays)
+    @inbounds Iterators.filter(eachindex(itr.x)) do i
+        itr.x[i] !== missing && !_anymissingindex(itr.others, i)
+    end
+end
+
+function Base.keys(itr::SkipMissingsofArrays)
+    @inbounds Iterators.filter(keys(itr.x)) do i
+        itr.x[i] !== missing && !_anymissingindex(itr.others, i)
+    end
+end
+
+@inline function Base.getindex(itr::SkipMissingsofArrays, i)
+    @boundscheck checkbounds(itr.x, i)
+    @inbounds xi = itr.x[i]
+    if xi === missing || @inbounds _anymissingindex(itr.others, i) 
+        throw(MissingException("the value at index $i is missing for some element"))
+    end
+    return xi
+end
+
+Base.mapreduce(f, op, itr::SkipMissingsofArrays) =
+    Base._mapreduce(f, op, Base.IndexStyle(itr), itr)
+
+function Base._mapreduce(f, op, ::IndexLinear, itr::SkipMissingsofArrays)
+    A = itr.x
+    local ai
+    inds = LinearIndices(A)
+    i = first(inds)
+    ilast = last(inds)
+    @inbounds while i <= ilast
+        ai = A[i]
+        ai === missing || _anymissingindex(itr.others, i) || break
+        i += 1
+    end
+    i > ilast && return Base.mapreduce_empty(f, op, Base.eltype(itr))
+    a1 = ai
+    i += 1
+    @inbounds while i <= ilast
+        ai = A[i]
+        ai === missing || _anymissingindex(itr.others, i) || break
+        i += 1
+    end
+    i > ilast && return Base.mapreduce_first(f, op, a1)
+    # We know A contains at least two non-missing entries: the result cannot be nothing
+    something(Base.mapreduce_impl(f, op, itr, first(inds), last(inds)))
+end
+
+Base._mapreduce(f, op, ::IndexCartesian, itr::SkipMissingsofArrays) = mapfoldl(f, op, itr)
+
+
+Base.mapreduce_impl(f, op, A::SkipMissingsofArrays, ifirst::Integer, ilast::Integer) =
+    Base.mapreduce_impl(f, op, A, ifirst, ilast, Base.pairwise_blocksize(f, op))
+
+# Returns nothing when the input contains only missing values, and Some(x) otherwise
+@noinline function Base.mapreduce_impl(f, op, itr::SkipMissingsofArrays,
+                                       ifirst::Integer, ilast::Integer, blksize::Int)
+    A = itr.x
+    if ifirst == ilast
+        @inbounds a1 = A[ifirst]
+        if a1 === missing 
+            return nothing
+        elseif _anymissingindex(itr.others, ifirst) 
+            return nothing
+        else
+            return Some(Base.mapreduce_first(f, op, a1))
+        end
+    elseif ifirst + blksize > ilast
+        # sequential portion
+        local ai
+        i = ifirst
+        @inbounds while i <= ilast
+            ai = A[i]
+            ai === missing || _anymissingindex(itr.others, i) || break
+            i += 1
+        end
+        i > ilast && return nothing
+        a1 = ai::eltype(itr)
+        i += 1
+        @inbounds while i <= ilast
+            ai = A[i]
+            ai === missing || _anymissingindex(itr.others, i) || break
+            i += 1
+        end
+        i > ilast && return Some(Base.mapreduce_first(f, op, a1))
+        a2 = ai::eltype(itr)
+        i += 1
+        v = op(f(a1), f(a2))
+        @simd for i = i:ilast
+            @inbounds ai = A[i]
+            ai === missing || @inbounds _anymissingindex(itr.others, i) || (v = op(v, f(ai)))
+        end
+        return Some(v)
+    else
+        # pairwise portion
+        imid = (ifirst + ilast) >> 1
+        v1 = Base.mapreduce_impl(f, op, itr, ifirst, imid, blksize)
+        v2 = Base.mapreduce_impl(f, op, itr, imid+1, ilast, blksize)
+        if v1 === nothing && v2 === nothing
+            return nothing
+        elseif v1 === nothing
+            return v2
+        elseif v2 === nothing
+            return v1
+        else
+            return Some(op(something(v1), something(v2)))
+        end
+    end
+end
+
+"""
+    filter(f, itr::SkipMissings)
+
+Return a vector similar to the array wrapped by the given `SkipMissings` iterator
+but skipping all elements with a `missing` value in one of the iterators passed
+to `skipmissing` and elements for which `f` returns `false`. This method
+only applies when all iterators passed to `skipmissings` are arrays. 
+
+# Examples
+```
+julia> x = [missing; 2:9]; y = [1:9; missing];
+
+julia> mx, my = skipmissings(x, y);
+
+julia> filter(isodd, mx)
+4-element Array{Int64,1}:
+ 3
+ 5
+ 7
+ 9
+
+```
+"""
+function filter(f, itr::SkipMissingsofArrays)
+    x = itr.x
+    y = similar(x, eltype(itr), 0)
+    for i in eachindex(x)
+        @inbounds xi = x[i]
+        if xi !== missing && @inbounds !_anymissingindex(itr.others, i) && f(xi)
+            push!(y, xi)
+        end
+    end
+    y
+end
 
 end # module
