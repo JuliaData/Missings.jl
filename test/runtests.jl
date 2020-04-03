@@ -105,11 +105,8 @@ struct CubeRooter end
     @test_throws MissingException mx[1]
     @test reduce(+, mx) === 18
     @test isapprox(mapreduce(cos, *, collect(mx)),  mapreduce(cos, *, mx))
-    if VERSION >= v"1.4.0-DEV"
-        t = quote 
-            @inferred Union{Float64, Missing} mapreduce(cos, *, $mx)
-        end
-        eval(t)
+    @static if VERSION >= v"1.4.0-DEV"
+        @inferred Union{Float64, Missing} mapreduce(cos, *, mx)
     end
 
     x = [missing missing missing]
