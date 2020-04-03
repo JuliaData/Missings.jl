@@ -123,11 +123,8 @@ struct CubeRooter end
     y = [isodd(i) ? missing : i for i in 65:128]
     mx, my = skipmissings(x, y)
     @test sum(mx) === 1056
-    if VERSION >= v"1.4.0-DEV"
-        t = quote
-            @inferred Union{Missing, Int} sum($mx)
-        end
-        eval(t)
+    @static if VERSION >= v"1.4.0-DEV"
+        @inferred Union{Missing, Int} sum(mx)
     end
 
     @test levels(1:1) == levels([1]) == levels([1, missing]) == levels([missing, 1]) == [1]
