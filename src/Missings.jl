@@ -356,7 +356,7 @@ function Base._mapreduce(f, op, ::IndexLinear, itr::SkipMissingsofArrays)
         i += 1
     end
     i > ilast && return Base.mapreduce_empty(f, op, Base.eltype(itr))
-    a1 = ai
+    a1::eltype(itr.x) = ai
     i += 1
     @inbounds while i <= ilast
         ai = A[i]
