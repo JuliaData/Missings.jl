@@ -107,6 +107,8 @@ struct CubeRooter end
     @test isapprox(mapreduce(cos, *, collect(mx)),  mapreduce(cos, *, mx))
     @static if VERSION >= v"1.4.0-DEV"
         @inferred Union{Float64, Missing} mapreduce(cos, *, mx)
+        @inferred Union{Float64, Missing} sum(mx)
+        @inferred Union{Float64, Missing} reduce(+, mx) 
     end
 
     x = [missing missing missing]
@@ -122,6 +124,7 @@ struct CubeRooter end
     @test sum(mx) === 1056
     @static if VERSION >= v"1.4.0-DEV"
         @inferred Union{Missing, Int} sum(mx)
+        @inferred Union{Missing, Int} reduce(+, mx)
     end
 
     @test levels(1:1) == levels([1]) == levels([1, missing]) == levels([missing, 1]) == [1]
