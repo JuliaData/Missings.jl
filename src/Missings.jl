@@ -2,7 +2,7 @@ module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
        Missing, MissingException, levels, coalesce, passmissing, nonmissingtype,
-       skipmissings
+       skipmissings, spreadmissings
 
 using Base: ismissing, missing, Missing, MissingException
 using Base: @deprecate
@@ -208,6 +208,80 @@ missing
 """
 passmissing(f) = PassMissing{Core.Typeof(f)}(f)
 
+struct SpreadMissings{F} <: Function
+    f::F
+end
+
+function (f::SpreadMissings{F})(x) where {F}
+    @assert x isa AbstractVector
+
+    if x isa AbstractVector{>:Missing}
+        nonmissinginds = collect(eachindex(skipmissing(x)))
+        res = f.f(view(x, nonmissinginds))
+
+        out = Vector{Union{Missing, eltype(res)}}(missing, length(x))
+        out[nonmissinginds] .= res
+
+        return out
+    else
+        return f.f(x)
+    end
+end
+
+function (f::SpreadMissings{F})(xs...) where {F}
+    @assert all(x -> x isa AbstractVector, xs)
+
+    x1 = first(xs)
+    @assert all(x -> length(x) == length(x1), xs)
+
+    if any(x -> x isa AbstractVector{>:Missing}, xs)
+        nonmissinginds = collect(eachindex(skipmissings(xs...)))
+        # TODO: narrow the type of the `view` to exclude `Missing`
+        res = f.f((view(x, nonmissinginds) for x in xs)...)
+
+        out = Vector{Union{Missing, eltype(res)}}(missing, length(x1))
+        out[nonmissinginds] .= res
+
+        return out
+    else
+        return f.f(xs...)
+    end
+end
+
+"""
+    spreadmissings(f)
+
+Return a function that performs the following transformation given the input `args...`
+
+1. Assumes all `args` are `AbstractArray`s
+2. Determines the indicies of `args` for which all elements are non-missing
+3. Applies `f` on the `view`s or `args` for the non-missing indices, returning `res`
+4. Returns a result the same length as the elements in `args`, filling in `missing`
+   as needed
+
+# Examples
+```
+julia> x = [0, 1, 2, missing]; y = [-1, 0, missing, 2];
+
+julia> function restricted_fun(x, y)           map(x, y) do xi, yi
+               if xi < 1 || yi < 1 # will error on missings
+                   return 1
+               else
+                   return 2
+               end
+           end
+       end;
+
+julia> spreadmissings(restricted_fun)(x, y)
+4-element Vector{Union{Missing, Int64}}:
+ 1
+ 1
+  missing
+  missing
+```
+"""
+spreadmissings(f) = SpreadMissings{Core.Typeof(f)}(f)
+
 """
    skipmissings(args...)
 
@@ -258,7 +332,7 @@ struct SkipMissings{V, T}
     others::T
 end
 
-Base.@propagate_inbounds function _anymissingindex(others::Tuple{Vararg{AbstractArray}}, i)    
+Base.@propagate_inbounds function _anymissingindex(others::Tuple{Vararg{AbstractArray}}, i)
    for oth in others
         oth[i] === missing && return true
     end
@@ -267,7 +341,7 @@ Base.@propagate_inbounds function _anymissingindex(others::Tuple{Vararg{Abstract
 end
 
 @inline function _anymissingiterate(others::Tuple, state)
-    for oth in others 
+    for oth in others
         y = iterate(oth, state)
         y !== nothing && first(y) === missing && return true
     end
@@ -278,7 +352,7 @@ end
 const SkipMissingsofArrays = SkipMissings{V, T} where
     {V <: AbstractArray, T <: Tuple{Vararg{AbstractArray}}}
 
-function Base.show(io::IO, mime::MIME"text/plain", itr::SkipMissings{V}) where V 
+function Base.show(io::IO, mime::MIME"text/plain", itr::SkipMissings{V}) where V
     print(io, SkipMissings, '{', V, '}', '(', itr.x, ')', " comprised of " *
           "$(length(itr.others) + 1) iterators")
 end
@@ -335,7 +409,7 @@ end
 @inline function Base.getindex(itr::SkipMissingsofArrays, i)
     @boundscheck checkbounds(itr.x, i)
     @inbounds xi = itr.x[i]
-    if xi === missing || @inbounds _anymissingindex(itr.others, i) 
+    if xi === missing || @inbounds _anymissingindex(itr.others, i)
         throw(MissingException("the value at index $i is missing for some element"))
     end
     return xi
@@ -380,9 +454,9 @@ Base.mapreduce_impl(f, op, A::SkipMissingsofArrays, ifirst::Integer, ilast::Inte
     A = itr.x
     if ifirst == ilast
         @inbounds a1 = A[ifirst]
-        if a1 === missing 
+        if a1 === missing
             return nothing
-        elseif _anymissingindex(itr.others, ifirst) 
+        elseif _anymissingindex(itr.others, ifirst)
             return nothing
         else
             return Some(Base.mapreduce_first(f, op, a1))
@@ -436,7 +510,7 @@ end
 Return a vector similar to the array wrapped by the given `SkipMissings` iterator
 but skipping all elements with a `missing` value in one of the iterators passed
 to `skipmissing` and elements for which `f` returns `false`. This method
-only applies when all iterators passed to `skipmissings` are arrays. 
+only applies when all iterators passed to `skipmissings` are arrays.
 
 # Examples
 ```
