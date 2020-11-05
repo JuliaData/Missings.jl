@@ -229,18 +229,29 @@ function (f::SpreadMissings{F})(x) where {F}
 end
 
 function (f::SpreadMissings{F})(xs...) where {F}
-    @assert all(x -> x isa AbstractVector, xs)
-
-    x1 = first(xs)
-    @assert all(x -> length(x) == length(x1), xs)
-
     if any(x -> x isa AbstractVector{>:Missing}, xs)
-        nonmissinginds = collect(eachindex(skipmissings(xs...)))
-        # TODO: narrow the type of the `view` to exclude `Missing`
-        res = f.f((view(x, nonmissinginds) for x in xs)...)
+        vecs = Base.filter(x -> x isa AbstractVector, xs)
+        s = skipmissings(vecs...)
+        vecs_counter = 1
+        newargs = ntuple(length(xs)) do i
+            if xs[i] isa AbstractVector
+                t = s[vecs_counter]
+                vecs_counter += 1
+            else
+                t = xs[i]
+            end
+            t
+        end
 
-        out = Vector{Union{Missing, eltype(res)}}(missing, length(x1))
-        out[nonmissinginds] .= res
+        res = f.f(newargs...)
+
+        if res isa AbstractVector
+            out = Vector{Union{Missing, eltype(res)}}(missing, length(first(vecs)))
+            out[collect(eachindex(first(s)))] .= res
+        else
+            out = Vector{Union{Missing, typeof(res)}}(missing, length(first(vecs)))
+            out[collect(eachindex(first(s)))] .= Ref(res)
+        end
 
         return out
     else
@@ -251,19 +262,32 @@ end
 """
     spreadmissings(f)
 
-Return a function that performs the following transformation given the input `args...`
+Given a function `f`, wraps a function `f` but performs a transformation
+on arguments before executing. Given the call
 
-1. Assumes all `args` are `AbstractArray`s
-2. Determines the indicies of `args` for which all elements are non-missing
-3. Applies `f` on the `view`s or `args` for the non-missing indices, returning `res`
-4. Returns a result the same length as the elements in `args`, filling in `missing`
-   as needed
+```
+spreadmissings(f)(x::AbstractVector, y::Integer, z::AbstractVector)
+```
+
+will construct the intermedaite variables
+
+```
+sx, sy = skipmissings(x, y)
+```
+
+and call
+
+```
+f(sx, y, sy)
+
+```
 
 # Examples
 ```
 julia> x = [0, 1, 2, missing]; y = [-1, 0, missing, 2];
 
-julia> function restricted_fun(x, y)           map(x, y) do xi, yi
+julia> function restricted_fun(x, y)
+            map(x, y) do xi, yi
                if xi < 1 || yi < 1 # will error on missings
                    return 1
                else
