@@ -236,6 +236,7 @@ function (f::SpreadMissings{F})(xs...; kwargs...) where {F}
             out[nonmissinginds] .= res
         else
             out = similar(vecs[1], Union{typeof(res), Missing})
+            fill!(out, missing)
             out[nonmissinginds] .= Ref(res)
         end
 
