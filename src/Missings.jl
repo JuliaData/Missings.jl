@@ -212,30 +212,15 @@ struct SpreadMissings{F} <: Function
     f::F
 end
 
-function (f::SpreadMissings{F})(x) where {F}
-    @assert x isa AbstractVector
-
-    if x isa AbstractVector{>:Missing}
-        nonmissinginds = collect(eachindex(skipmissing(x)))
-        res = f.f(view(x, nonmissinginds))
-
-        out = Vector{Union{Missing, eltype(res)}}(missing, length(x))
-        out[nonmissinginds] .= res
-
-        return out
-    else
-        return f.f(x)
-    end
-end
-
-function (f::SpreadMissings{F})(xs...) where {F}
+function (f::SpreadMissings{F})(xs...; kwargs...) where {F}
     if any(x -> x isa AbstractVector{>:Missing}, xs)
         vecs = Base.filter(x -> x isa AbstractVector, xs)
         s = skipmissings(vecs...)
+        nonmissinginds = collect(eachindex(first(s)))
         vecs_counter = 1
         newargs = ntuple(length(xs)) do i
             if xs[i] isa AbstractVector
-                t = s[vecs_counter]
+                t = view(xs[i], nonmissinginds)
                 vecs_counter += 1
             else
                 t = xs[i]
@@ -243,19 +228,20 @@ function (f::SpreadMissings{F})(xs...) where {F}
             t
         end
 
-        res = f.f(newargs...)
+        res = f.f(newargs...; kwargs...)
 
         if res isa AbstractVector
-            out = Vector{Union{Missing, eltype(res)}}(missing, length(first(vecs)))
-            out[collect(eachindex(first(s)))] .= res
+            out = similar(res, Union{eltype(res), Missing}, length(vecs[1]))
+            fill!(out, missing)
+            out[nonmissinginds] .= res
         else
-            out = Vector{Union{Missing, typeof(res)}}(missing, length(first(vecs)))
-            out[collect(eachindex(first(s)))] .= Ref(res)
+            out = similar(vecs[1], Union{typeof(res), Missing})
+            out[nonmissinginds] .= Ref(res)
         end
 
         return out
     else
-        return f.f(xs...)
+        return f.f(xs...; kwargs...)
     end
 end
 
