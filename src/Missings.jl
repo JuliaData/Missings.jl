@@ -205,6 +205,7 @@ julia> passmissing((x,y)->"\$x \$y")(1, 2)
 
 julia> passmissing((x,y)->"\$x \$y")(missing)
 missing
+```
 """
 passmissing(f) = PassMissing{Core.Typeof(f)}(f)
 
