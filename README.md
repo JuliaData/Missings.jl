@@ -2,15 +2,16 @@
 
 *Convenience functions for working with missing values in Julia*
 
-[![][travis-img]][travis-url] [![][appveyor-img]][appveyor-url] [![][codecov-img]][codecov-url]
+[![CI](https://github.com/JuliaData/Missings.jl/workflows/CI/badge.svg)](https://github.com/JuliaData/Missings.jl/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/JuliaData/Missings.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaData/Missings.jl)
+[![deps](https://juliahub.com/docs/Missings/deps.svg)](https://juliahub.com/ui/Packages/Missings/wLfgT?t=2)
+[![version](https://juliahub.com/docs/Missings/version.svg)](https://juliahub.com/ui/Packages/Missings/wLfgT)
+[![pkgeval](https://juliahub.com/docs/Missings/pkgeval.svg)](https://juliahub.com/ui/Packages/Missings/wLfgT)
 
-## Installation
+**Installation**: at the Julia REPL, `import Pkg; Pkg.add("Missings")`
 
-The package is registered in the `General` package registry and can be installed with:
-
-```julia
-julia> using Pkg; Pkg.add("Missings")
-```
+**Maintenance**: Missings is maintained collectively by the [JuliaData collaborators](https://github.com/orgs/JuliaData/people).
+Responsiveness to pull requests and issues can vary, depending on the availability of key collaborators.
 
 ## Project Status
 
