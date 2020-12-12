@@ -1,12 +1,14 @@
 # Missings.jl
 
-*Convenience functions for working with missing values in Julia*
-
 [![CI](https://github.com/JuliaData/Missings.jl/workflows/CI/badge.svg)](https://github.com/JuliaData/Missings.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/JuliaData/Missings.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaData/Missings.jl)
 [![deps](https://juliahub.com/docs/Missings/deps.svg)](https://juliahub.com/ui/Packages/Missings/wLfgT?t=2)
 [![version](https://juliahub.com/docs/Missings/version.svg)](https://juliahub.com/ui/Packages/Missings/wLfgT)
 [![pkgeval](https://juliahub.com/docs/Missings/pkgeval.svg)](https://juliahub.com/ui/Packages/Missings/wLfgT)
+
+
+*Convenience functions for working with missing values in Julia*
+
 
 **Installation**: at the Julia REPL, `import Pkg; Pkg.add("Missings")`
 
