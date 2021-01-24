@@ -9,23 +9,34 @@ struct CubeRooter end
     @test eltype(x) === Int
     @test length(x) == 4
     @test size(x) == (4,)
-    @test collect(x) == collect(1:4)
+    @test keys(x) == eachindex(x) == 1:4
+    @test collect(x) == [x[i] for i in keys(x)] == 1:4
     @test collect(x) isa Vector{Int}
     x = Missings.replace([1, 2, missing, 4], 3.0)
     @test eltype(x) === Int
     @test length(x) == 4
     @test size(x) == (4,)
-    @test collect(x) == collect(1:4)
+    @test keys(x) == eachindex(x) == 1:4
+    @test collect(x) == [x[i] for i in keys(x)] == 1:4
     @test collect(x) isa Vector{Int}
     x = Missings.replace([1 2; missing 4], 3)
     @test eltype(x) === Int
     @test length(x) == 4
     @test size(x) == (2, 2)
-    @test collect(x) == [1 2; 3 4]
+    @test keys(x) == CartesianIndices((1:2, 1:2))
+    @test eachindex(x) == 1:4
+    @test collect(x) == [x[i] for i in keys(x)] == [1 2; 3 4]
     @test collect(x) isa Matrix{Int}
     x = Missings.replace((v for v in [missing, 1, missing, 2, 4]), 0)
     @test length(x) == 5
     @test size(x) == (5,)
+    if VERSION >= v"1.7.0-DEV"
+        @test eachindex(x) == keys(x) == 1:5
+    else
+        @test_throws MethodError keys(x)
+        @test_throws MethodError eachindex(x)
+    end
+    @test_throws MethodError x[1]
     @test eltype(x) === Any
     @test collect(x) == [0, 1, 0, 2, 4]
     @test collect(x) isa Vector{Int}
@@ -34,19 +45,29 @@ struct CubeRooter end
     @test eltype(x) === Int
     @test length(x) == 4
     @test size(x) == (4,)
-    @test collect(x) == [1, 2, 3, 4]
+    @test keys(x) == eachindex(x) == 1:4
+    @test collect(x) == [x[i] for i in keys(x)] == [1, 2, 3, 4]
     @test collect(x) isa Vector{Int}
     x = Missings.fail([1 2; 3 4])
     @test eltype(x) === Int
     @test length(x) == 4
     @test size(x) == (2, 2)
-    @test collect(x) == [1 2; 3 4]
+    @test keys(x) == CartesianIndices((1:2, 1:2))
+    @test eachindex(x) == 1:4
+    @test collect(x) == [x[i] for i in keys(x)] == [1 2; 3 4]
     @test collect(x) isa Matrix{Int}
     @test_throws MissingException collect(Missings.fail([1, 2, missing, 4]))
     x = Missings.fail(v for v in [1, 2, 4])
     @test eltype(x) === Any
     @test length(x) == 3
     @test size(x) == (3,)
+    if VERSION >= v"1.7.0-DEV"
+        @test eachindex(x) == keys(x) == 1:3
+    else
+        @test_throws MethodError keys(x)
+        @test_throws MethodError eachindex(x)
+    end
+    @test_throws MethodError x[1]
     @test collect(x) == [1, 2, 4]
     @test collect(x) isa Vector{Int}
 
