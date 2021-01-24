@@ -9,6 +9,7 @@ struct CubeRooter end
     @test eltype(x) === Int
     @test length(x) == 4
     @test size(x) == (4,)
+    @test axes(x) == (1:4,)
     @test keys(x) == eachindex(x) == 1:4
     @test collect(x) == [x[i] for i in keys(x)] == 1:4
     @test collect(x) isa Vector{Int}
@@ -16,6 +17,7 @@ struct CubeRooter end
     @test eltype(x) === Int
     @test length(x) == 4
     @test size(x) == (4,)
+    @test axes(x) == (1:4,)
     @test keys(x) == eachindex(x) == 1:4
     @test collect(x) == [x[i] for i in keys(x)] == 1:4
     @test collect(x) isa Vector{Int}
@@ -23,6 +25,7 @@ struct CubeRooter end
     @test eltype(x) === Int
     @test length(x) == 4
     @test size(x) == (2, 2)
+    @test axes(x) == (1:2, 1:2)
     @test keys(x) == CartesianIndices((1:2, 1:2))
     @test eachindex(x) == 1:4
     @test collect(x) == [x[i] for i in keys(x)] == [1 2; 3 4]
@@ -45,6 +48,7 @@ struct CubeRooter end
     @test eltype(x) === Int
     @test length(x) == 4
     @test size(x) == (4,)
+    @test axes(x) == (1:4,)
     @test keys(x) == eachindex(x) == 1:4
     @test collect(x) == [x[i] for i in keys(x)] == [1, 2, 3, 4]
     @test collect(x) isa Vector{Int}
@@ -52,6 +56,7 @@ struct CubeRooter end
     @test eltype(x) === Int
     @test length(x) == 4
     @test size(x) == (2, 2)
+    @test axes(x) == (1:2, 1:2)
     @test keys(x) == CartesianIndices((1:2, 1:2))
     @test eachindex(x) == 1:4
     @test collect(x) == [x[i] for i in keys(x)] == [1 2; 3 4]
@@ -61,6 +66,7 @@ struct CubeRooter end
     @test eltype(x) === Any
     @test length(x) == 3
     @test size(x) == (3,)
+    @test axes(x) == (1:3,)
     if VERSION >= v"1.7.0-DEV"
         @test eachindex(x) == keys(x) == 1:3
     else
