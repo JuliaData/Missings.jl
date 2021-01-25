@@ -53,10 +53,15 @@ disallowmissing(x::AbstractArray{T}) where {T} = convert(AbstractArray{nonmissin
 """
     Missings.replace(itr, replacement)
 
-Return an iterator wrapping iterable `itr` which replaces [`missing`](@ref) values with
-`replacement`. When applicable, the size of `itr` is preserved.
+Return an iterator over the elements in `itr` which replaces [`missing`](@ref) values with
+`replacement`.
+
+When applicable, the size of `itr` is preserved.
+The returned object can be indexed using indices of `itr` if the latter is indexable,
+and `eachindex` and `keys` return the indices of `itr`.
+
 If the type of `replacement` differs from the element type of `itr`,
-it will be converted.
+it will be converted to it.
 
 See also: [`skipmissing`](@ref), [`Missings.fail`](@ref)
 
@@ -86,7 +91,10 @@ Base.IteratorEltype(::Type{<:EachReplaceMissing{T}}) where {T} =
     Base.IteratorEltype(T)
 Base.length(itr::EachReplaceMissing) = length(itr.x)
 Base.size(itr::EachReplaceMissing) = size(itr.x)
+Base.axes(itr::EachReplaceMissing) = axes(itr.x)
 Base.eltype(itr::EachReplaceMissing) = nonmissingtype(eltype(itr.x))
+Base.eachindex(itr::EachReplaceMissing) = eachindex(itr.x)
+Base.keys(itr::EachReplaceMissing) = keys(itr.x)
 
 @inline function Base.iterate(itr::EachReplaceMissing)
     st = iterate(itr.x)
@@ -102,11 +110,19 @@ end
     return (v isa Missing ? itr.replacement : v, s)
 end
 
+Base.@propagate_inbounds function Base.getindex(itr::EachReplaceMissing, I...)
+    v = itr.x[I...]
+    return v === missing ? itr.replacement : v
+end
+
 """
     Missings.fail(itr)
 
-Return an iterator wrapping iterable `itr` which will throw a [`MissingException`](@ref)
+Return an iterator over the elements in `itr` which will throw a [`MissingException`](@ref)
 if a [`missing`](@ref) value is found.
+The returned object can be indexed using indices of `itr` if the latter is indexable.
+Indices corresponding to missing values are not valid: even though they are not skipped
+by `keys` and eachindex, a `MissingException` is thrown when trying to use them.
 
 Use [`collect`](@ref) to obtain an `Array` containing the resulting values.
 If `itr` is an array, the resulting array will have the same dimensions.
@@ -135,7 +151,10 @@ Base.IteratorEltype(::Type{EachFailMissing{T}}) where {T} =
     Base.IteratorEltype(T)
 Base.length(itr::EachFailMissing) = length(itr.x)
 Base.size(itr::EachFailMissing) = size(itr.x)
+Base.axes(itr::EachFailMissing) = axes(itr.x)
 Base.eltype(itr::EachFailMissing) = nonmissingtype(eltype(itr.x))
+Base.eachindex(itr::EachFailMissing) = eachindex(itr.x)
+Base.keys(itr::EachFailMissing) = keys(itr.x)
 
 @inline function Base.iterate(itr::EachFailMissing)
     st = iterate(itr.x)
@@ -151,6 +170,12 @@ end
     v, s = st
     ismissing(v) && throw(MissingException("missing value encountered by Missings.fail"))
     return (v::eltype(itr), s)
+end
+
+Base.@propagate_inbounds function Base.getindex(itr::EachFailMissing, I...)
+    v = itr.x[I...]
+    v === missing && throw(MissingException("the value at index $I is missing"))
+    return v
 end
 
 const levels = DataAPI.levels
