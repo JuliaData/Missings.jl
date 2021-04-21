@@ -102,58 +102,6 @@ struct CubeRooter end
     @test collect(x) == [1, 2, 4]
     @test collect(x) isa Vector{Int}
 
-    x = [1, 2, missing, 4]
-    y = ["a", "b", "c", missing]
-    z = [missing, missing, 3.1, 4.5]
-    l = [1, 2, 3, 4, 5]
-    @test_throws ArgumentError skipmissings(x, l)
-    mx, my = skipmissings(x, y)
-    iobuf = IOBuffer()
-    show(iobuf, MIME("text/plain"), mx)
-    s = String(take!(iobuf))
-    @test s == "Missings.SkipMissings{$(Vector{Union{Missing, Int}})}(" *
-        "Union{Missing, $Int}[1, 2, missing, 4]) comprised of 2 iterators"
-    @test collect(mx) == [1, 2]
-    @test collect(mx) isa Vector{Int} 
-    @test reduce(+, mx) === reduce(+, collect(mx)) === sum(mx) ===
-        mapreduce(identity, +, mx) === 3
-    @test mapreduce(x -> x^2, +, mx) === mapreduce(x -> x^2, +, collect(mx)) === 5
-    mx, my, mz = skipmissings(x, y, z)
-    @test eltype(mx) == Int
-    @test eltype(my) == String
-    @test eltype(mz) == Float64
-    @test isempty(collect(mx))
-    @test sum(mx) === 0
-    x = [missing 4; 2 5; 3 6]
-    y = [1 4; missing 5; 3 6]
-    mx, my = skipmissings(x, y)
-    @test collect(mx) == [3, 4, 5, 6]
-    @test mx[3] == 3
-    @test_throws MissingException mx[1]
-    @test reduce(+, mx) === 18
-    @test isapprox(mapreduce(cos, *, collect(mx)),  mapreduce(cos, *, mx))
-    @static if VERSION >= v"1.4.0-DEV"
-        @inferred Union{Float64, Missing} mapreduce(cos, *, mx)
-        @inferred Union{Float64, Missing} sum(mx)
-        @inferred Union{Float64, Missing} reduce(+, mx) 
-    end
-
-    x = [missing missing missing]
-    y = [1, 2, 3]
-    mx, my = skipmissings(x, y)
-    @test_throws ArgumentError reduce(x -> x/2, mx)
-    @test_throws ArgumentError mapreduce(x -> x/2, +, mx)
-    @test_throws MethodError length(mx)
-    @test IndexStyle(typeof(mx)) == IndexStyle(typeof(x))
-    x = [isodd(i) ? missing : i for i in 1:64]
-    y = [isodd(i) ? missing : i for i in 65:128]
-    mx, my = skipmissings(x, y)
-    @test sum(mx) === 1056
-    @static if VERSION >= v"1.4.0-DEV"
-        @inferred Union{Missing, Int} sum(mx)
-        @inferred Union{Missing, Int} reduce(+, mx)
-    end
-
     @test levels(1:1) == levels([1]) == levels([1, missing]) == levels([missing, 1]) == [1]
     @test levels(2:-1:1) == levels([2, 1]) == levels([2, missing, 1]) == [1, 2]
     @test levels([missing, "a", "c", missing, "b"]) == ["a", "b", "c"]
@@ -246,9 +194,56 @@ struct CubeRooter end
     @test passmissing(cuberoot) === Missings.PassMissing{CubeRooter}(cuberoot)
 
     @testset "deprecated" begin
-        # The (unexported) `Missings.T` was deprecated to `Missings.nonmissingtype`
-        for x in (Union{Int, Missing}, Any, Missing, Union{Array{Int}, Missing})
-            @test Missings.T(x) == Missings.nonmissingtype(x)
+        x = [1, 2, missing, 4]
+        y = ["a", "b", "c", missing]
+        z = [missing, missing, 3.1, 4.5]
+        l = [1, 2, 3, 4, 5]
+        @test_throws ArgumentError skipmissings(x, l)
+        mx, my = skipmissings(x, y)
+        iobuf = IOBuffer()
+        show(iobuf, MIME("text/plain"), mx)
+        s = String(take!(iobuf))
+        @test s == "Missings.SkipMissings{$(Vector{Union{Missing, Int}})}(" *
+            "Union{Missing, $Int}[1, 2, missing, 4]) comprised of 2 iterators"
+        @test collect(mx) == [1, 2]
+        @test collect(mx) isa Vector{Int} 
+        @test reduce(+, mx) === reduce(+, collect(mx)) === sum(mx) ===
+            mapreduce(identity, +, mx) === 3
+        @test mapreduce(x -> x^2, +, mx) === mapreduce(x -> x^2, +, collect(mx)) === 5
+        mx, my, mz = skipmissings(x, y, z)
+        @test eltype(mx) == Int
+        @test eltype(my) == String
+        @test eltype(mz) == Float64
+        @test isempty(collect(mx))
+        @test sum(mx) === 0
+        x = [missing 4; 2 5; 3 6]
+        y = [1 4; missing 5; 3 6]
+        mx, my = skipmissings(x, y)
+        @test collect(mx) == [3, 4, 5, 6]
+        @test mx[3] == 3
+        @test_throws MissingException mx[1]
+        @test reduce(+, mx) === 18
+        @test isapprox(mapreduce(cos, *, collect(mx)),  mapreduce(cos, *, mx))
+        @static if VERSION >= v"1.4.0-DEV"
+            @inferred Union{Float64, Missing} mapreduce(cos, *, mx)
+            @inferred Union{Float64, Missing} sum(mx)
+            @inferred Union{Float64, Missing} reduce(+, mx) 
+        end
+
+        x = [missing missing missing]
+        y = [1, 2, 3]
+        mx, my = skipmissings(x, y)
+        @test_throws ArgumentError reduce(x -> x/2, mx)
+        @test_throws ArgumentError mapreduce(x -> x/2, +, mx)
+        @test_throws MethodError length(mx)
+        @test IndexStyle(typeof(mx)) == IndexStyle(typeof(x))
+        x = [isodd(i) ? missing : i for i in 1:64]
+        y = [isodd(i) ? missing : i for i in 65:128]
+        mx, my = skipmissings(x, y)
+        @test sum(mx) === 1056
+        @static if VERSION >= v"1.4.0-DEV"
+            @inferred Union{Missing, Int} sum(mx)
+            @inferred Union{Missing, Int} reduce(+, mx)
         end
     end
 end

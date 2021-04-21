@@ -5,7 +5,6 @@ export allowmissing, disallowmissing, ismissing, missing, missings,
        skipmissings
 
 using Base: ismissing, missing, Missing, MissingException
-using Base: @deprecate
 
 @static if VERSION < v"1.3.0-alpha.121"
     nonmissingtype(::Type{S}) where {S} = Core.Compiler.typesubtract(S, Missing)
@@ -14,8 +13,6 @@ else
 end
 
 import DataAPI
-
-@deprecate T nonmissingtype false
 
 # vector constructors
 missings(dims::Dims) = fill(missing, dims)
@@ -259,6 +256,8 @@ julia> collect(tx)
 ```
 """
 function skipmissings(args...)
+    Base.depwarn("Current design of skipmissings is deprecated. In future releases " *
+                 "this function may be redesigned or removed", :skipmissings)
     if isempty(args)
         throw(ArgumentError("Must input one or more arguments"))
     end
