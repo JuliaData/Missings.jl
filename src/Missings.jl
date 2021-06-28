@@ -219,17 +219,15 @@ function (f::SpreadMissings{F})(xs...; kwargs...) where {F}
         findex = eachindex(first(vecs))
         @assert all(x -> eachindex(x) == findex, vecs)
 
-
         nonmissingmask = fill(true, length(vecs[1]))
         for v in vecs
-            nonmissingmask .&= .!ismissing(v)
+            nonmissingmask .&= .!ismissing.(v)
         end
-        nonmissinginds = findall(nonmissingmask)
 
         vecs_counter = 1
         newargs = ntuple(length(xs)) do i
             if xs[i] isa AbstractVector
-                t = view(xs[i], nonmissinginds)
+                t = view(xs[i], nonmissingmask)
                 vecs_counter += 1
             else
                 t = xs[i]
@@ -242,11 +240,11 @@ function (f::SpreadMissings{F})(xs...; kwargs...) where {F}
         if res isa AbstractVector
             out = similar(res, Union{eltype(res), Missing}, length(vecs[1]))
             fill!(out, missing)
-            out[nonmissinginds] .= res
+            out[nonmissingmask] .= res
         else
             out = similar(vecs[1], Union{typeof(res), Missing})
             fill!(out, missing)
-            out[nonmissinginds] .= Ref(res)
+            out[nonmissingmask] .= Ref(res)
         end
 
         return out
