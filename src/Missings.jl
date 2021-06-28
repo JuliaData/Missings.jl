@@ -215,8 +215,11 @@ end
 function (f::SpreadMissings{F})(xs...; kwargs...) where {F}
     if any(x -> x isa AbstractVector{>:Missing}, xs)
         vecs = Base.filter(x -> x isa AbstractVector, xs)
-        s = skipmissings(vecs...)
-        nonmissinginds = collect(eachindex(first(s)))
+    nonmissingmask = fill(true, length(vecs[1]))
+    for v in vecs
+        nonmissingmask .&= .!ismissing(v)
+    end
+    nonmissinginds = findall(nonmissingmask)
         vecs_counter = 1
         newargs = ntuple(length(xs)) do i
             if xs[i] isa AbstractVector
