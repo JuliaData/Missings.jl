@@ -2,7 +2,7 @@ module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
        Missing, MissingException, levels, coalesce, passmissing, nonmissingtype,
-       skipmissings
+       skipmissings, @?
 
 using Base: ismissing, missing, Missing, MissingException
 
@@ -490,4 +490,13 @@ function filter(f, itr::SkipMissingsofArrays)
     y
 end
 
+union_macro_ex = :(
+macro _(typ)
+        :(Union{$(esc(typ)), Missing})
+end
+)
+
+union_macro_ex.args[1].args[1] = :?
+eval(union_macro_ex)
+       
 end # module
