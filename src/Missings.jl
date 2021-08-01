@@ -490,6 +490,7 @@ function filter(f, itr::SkipMissingsofArrays)
     y
 end
 
+if VERSION >= v"1.3"
 """
     @?(ex)
 
@@ -518,5 +519,18 @@ julia> @?(Int)[1, 2, 3]
 macro var"?"(typ)
     :(Union{$(esc(typ)), Missing})
 end
-       
+
+else # Julia version earlier than 1.3
+
+union_macro_ex = :(
+macro _(typ)
+        :(Union{$(esc(typ)), Missing})
+end
+)
+
+union_macro_ex.args[1].args[1] = :?
+eval(union_macro_ex)
+
+end # definition of @?
+
 end # module
