@@ -206,7 +206,7 @@ struct CubeRooter end
         @test s == "Missings.SkipMissings{$(Vector{Union{Missing, Int}})}(" *
             "Union{Missing, $Int}[1, 2, missing, 4]) comprised of 2 iterators"
         @test collect(mx) == [1, 2]
-        @test collect(mx) isa Vector{Int} 
+        @test collect(mx) isa Vector{Int}
         @test reduce(+, mx) === reduce(+, collect(mx)) === sum(mx) ===
             mapreduce(identity, +, mx) === 3
         @test mapreduce(x -> x^2, +, mx) === mapreduce(x -> x^2, +, collect(mx)) === 5
@@ -227,14 +227,14 @@ struct CubeRooter end
         @static if VERSION >= v"1.4.0-DEV"
             @inferred Union{Float64, Missing} mapreduce(cos, *, mx)
             @inferred Union{Float64, Missing} sum(mx)
-            @inferred Union{Float64, Missing} reduce(+, mx) 
+            @inferred Union{Float64, Missing} reduce(+, mx)
         end
 
         x = [missing missing missing]
         y = [1, 2, 3]
         mx, my = skipmissings(x, y)
-        @test_throws ArgumentError reduce(x -> x/2, mx)
-        @test_throws ArgumentError mapreduce(x -> x/2, +, mx)
+        @test_throws Union{ArgumentError,MethodError} reduce(x -> x/2, mx)
+        @test_throws Union{ArgumentError,MethodError} mapreduce(x -> x/2, +, mx)
         @test_throws MethodError length(mx)
         @test IndexStyle(typeof(mx)) == IndexStyle(typeof(x))
         x = [isodd(i) ? missing : i for i in 1:64]
