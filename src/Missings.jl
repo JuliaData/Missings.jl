@@ -12,7 +12,7 @@ else
     using Base: nonmissingtype
 end
 
-import DataAPI
+using DataAPI: levels
 
 # vector constructors
 missings(dims::Dims) = fill(missing, dims)
@@ -174,8 +174,6 @@ Base.@propagate_inbounds function Base.getindex(itr::EachFailMissing, I...)
     v === missing && throw(MissingException("the value at index $I is missing"))
     return v
 end
-
-const levels = DataAPI.levels
 
 struct PassMissing{F} <: Function
     f::F
