@@ -193,6 +193,11 @@ struct CubeRooter end
     @test passmissing(Int) === Missings.PassMissing{Type{Int}}(Int)
     @test passmissing(cuberoot) === Missings.PassMissing{CubeRooter}(cuberoot)
 
+    @testset "@?" begin
+        @test (@?Int) === Union{Int, Missing}
+        @test @?(Int)[] isa Vector{Union{Int, Missing}}
+    end
+
     @testset "deprecated" begin
         x = [1, 2, missing, 4]
         y = ["a", "b", "c", missing]

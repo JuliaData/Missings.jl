@@ -2,7 +2,7 @@ module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
        Missing, MissingException, levels, coalesce, passmissing, nonmissingtype,
-       skipmissings
+       skipmissings, @?
 
 using Base: ismissing, missing, Missing, MissingException
 
@@ -281,7 +281,7 @@ struct SkipMissings{V, T}
     others::T
 end
 
-Base.@propagate_inbounds function _anymissingindex(others::Tuple{Vararg{AbstractArray}}, i)    
+Base.@propagate_inbounds function _anymissingindex(others::Tuple{Vararg{AbstractArray}}, i)
    for oth in others
         oth[i] === missing && return true
     end
@@ -290,7 +290,7 @@ Base.@propagate_inbounds function _anymissingindex(others::Tuple{Vararg{Abstract
 end
 
 @inline function _anymissingiterate(others::Tuple, state)
-    for oth in others 
+    for oth in others
         y = iterate(oth, state)
         y !== nothing && first(y) === missing && return true
     end
@@ -301,7 +301,7 @@ end
 const SkipMissingsofArrays = SkipMissings{V, T} where
     {V <: AbstractArray, T <: Tuple{Vararg{AbstractArray}}}
 
-function Base.show(io::IO, mime::MIME"text/plain", itr::SkipMissings{V}) where V 
+function Base.show(io::IO, mime::MIME"text/plain", itr::SkipMissings{V}) where V
     print(io, SkipMissings, '{', V, '}', '(', itr.x, ')', " comprised of " *
           "$(length(itr.others) + 1) iterators")
 end
@@ -358,7 +358,7 @@ end
 @inline function Base.getindex(itr::SkipMissingsofArrays, i)
     @boundscheck checkbounds(itr.x, i)
     @inbounds xi = itr.x[i]
-    if xi === missing || @inbounds _anymissingindex(itr.others, i) 
+    if xi === missing || @inbounds _anymissingindex(itr.others, i)
         throw(MissingException("the value at index $i is missing for some element"))
     end
     return xi
@@ -403,9 +403,9 @@ Base.mapreduce_impl(f, op, A::SkipMissingsofArrays, ifirst::Integer, ilast::Inte
     A = itr.x
     if ifirst == ilast
         @inbounds a1 = A[ifirst]
-        if a1 === missing 
+        if a1 === missing
             return nothing
-        elseif _anymissingindex(itr.others, ifirst) 
+        elseif _anymissingindex(itr.others, ifirst)
             return nothing
         else
             return Some(Base.mapreduce_first(f, op, a1))
@@ -459,7 +459,7 @@ end
 Return a vector similar to the array wrapped by the given `SkipMissings` iterator
 but skipping all elements with a `missing` value in one of the iterators passed
 to `skipmissing` and elements for which `f` returns `false`. This method
-only applies when all iterators passed to `skipmissings` are arrays. 
+only applies when all iterators passed to `skipmissings` are arrays.
 
 # Examples
 ```
@@ -486,6 +486,19 @@ function filter(f, itr::SkipMissingsofArrays)
         end
     end
     y
+end
+
+if VERSION >= v"1.3"
+    include("unionmissing.jl")
+else
+    union_macro_ex = :(
+    macro _(typ)
+            :(Union{$(esc(typ)), Missing})
+    end
+    )
+
+    union_macro_ex.args[1].args[1] = :?
+    eval(union_macro_ex)
 end
 
 end # module
