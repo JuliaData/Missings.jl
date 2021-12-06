@@ -213,11 +213,32 @@ struct SpreadMissings{F} <: Function
 end
 
 function (f::SpreadMissings{F})(xs...; kwargs...) where {F}
+
     if any(x -> x isa AbstractVector{>:Missing}, xs)
         vecs = Base.filter(x -> x isa AbstractVector, xs)
 
         findex = eachindex(first(vecs))
-        @assert all(x -> eachindex(x) == findex, vecs)
+        if !(all(x -> eachindex(x) == findex, vecs[2:end]))
+            d = Dict()
+            for i in 1:length(vecs)
+                e = eachindex(vecs[i])
+                if eachindex(e) in keys(d)
+                    push!(d[i], i)
+                else
+                    d[e] = [i]
+                end
+            end
+            s = "The indices of vector-input arguments are not all " *
+                "the same.\n"
+
+            for k in keys(d)
+                inds = join(d[k], ", ", " and ")
+                ind_msg = "Vector inputs $inds have indices $k \n"
+                s = s * ind_msg
+            end
+
+            throw(ArgumentError(s))
+        end
 
         nonmissingmask = fill(true, length(vecs[1]))
         for v in vecs
