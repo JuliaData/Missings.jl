@@ -212,8 +212,9 @@ struct SpreadMissings{F} <: Function
     f::F
 end
 
-function (f::SpreadMissings{F})(xs...; kwargs...) where {F}
-
+function (f::SpreadMissings{F})(args...; kwargs...) where {F}
+    kwargs_vals = values(values(kwargs))
+    xs = tuple(args..., kwargs_vals...)
     if any(x -> x isa AbstractVector{>:Missing}, xs)
         vecs = Base.filter(x -> x isa AbstractVector, xs)
 
@@ -245,18 +246,26 @@ function (f::SpreadMissings{F})(xs...; kwargs...) where {F}
             nonmissingmask .&= .!ismissing.(v)
         end
 
-        vecs_counter = 1
-        newargs = ntuple(length(xs)) do i
-            if xs[i] isa AbstractVector
-                t = view(xs[i], nonmissingmask)
-                vecs_counter += 1
+        newargs = ntuple(length(args)) do i
+            a = args[i]
+            if a isa AbstractVector
+                view(a, nonmissingmask)
             else
-                t = xs[i]
+                a
             end
-            t
         end
 
-        res = f.f(newargs...; kwargs...)
+        new_kwargs_vals = ntuple(length(kwargs_vals)) do i
+            a = kwargs_vals[i]
+            if a isa AbstractVector
+                view(a, nonmissingmask)
+            else
+                a
+            end
+        end
+        new_kwargs = NamedTuple{keys(kwargs)}(new_kwargs_vals)
+
+        res = f.f(newargs...; new_kwargs...)
 
         if res isa AbstractVector
             out = similar(res, Union{eltype(res), Missing}, length(vecs[1]))
