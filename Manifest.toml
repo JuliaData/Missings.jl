@@ -1,9 +1,0 @@
-# This file is machine-generated - editing it directly is not advised
-
-julia_version = "1.7.0"
-manifest_format = "2.0"
-
-[[deps.DataAPI]]
-git-tree-sha1 = "cc70b17275652eb47bc9e5f81635981f13cea5c8"
-uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
-version = "1.9.0"
