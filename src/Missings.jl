@@ -212,9 +212,19 @@ struct SpreadMissings{F} <: Function
     f::F
 end
 
+function non_spreadabble_check(t::Union{AbstractDict, NamedTuple, Tuple})
+    T = typeof(t)
+    s = "Spreadmissings on $T is reserved. Please wrap in Ref to be " *
+        "treated as a scalar."
+    throw(ArgumentError(s))
+end
+non_spreadabble_check(x) = nothing
+
 function (f::SpreadMissings{F})(args...; kwargs...) where {F}
     kwargs_vals = values(values(kwargs))
     xs = tuple(args..., kwargs_vals...)
+    foreach(non_spreadabble_check, xs)
+
     if any(x -> x isa AbstractVector{>:Missing}, xs)
         vecs = Base.filter(x -> x isa AbstractVector, xs)
 
@@ -234,7 +244,7 @@ function (f::SpreadMissings{F})(args...; kwargs...) where {F}
 
             for k in keys(d)
                 inds = join(d[k], ", ", " and ")
-                ind_msg = "Vector inputs $inds have indices $k \n"
+                ind_msg = "Vector inputs $inds have indices $k\n"
                 s = s * ind_msg
             end
 
@@ -245,11 +255,12 @@ function (f::SpreadMissings{F})(args...; kwargs...) where {F}
         for v in vecs
             nonmissingmask .&= .!ismissing.(v)
         end
+        nonmissinginds = findall(nonmissingmask)
 
         newargs = ntuple(length(args)) do i
             a = args[i]
             if a isa AbstractVector
-                view(a, nonmissingmask)
+                view(a, nonmissinginds)
             else
                 a
             end
@@ -258,7 +269,7 @@ function (f::SpreadMissings{F})(args...; kwargs...) where {F}
         new_kwargs_vals = ntuple(length(kwargs_vals)) do i
             a = kwargs_vals[i]
             if a isa AbstractVector
-                view(a, nonmissingmask)
+                view(a, nonmissinginds)
             else
                 a
             end
@@ -293,17 +304,14 @@ on arguments before executing. Given the call
 spreadmissings(f)(x::AbstractVector, y::Integer, z::AbstractVector)
 ```
 
-will construct the intermedaite variables
+will find the indices which corresond to `missing` values in *both*
+`x` and `z`. Then apply `f` on the `view`s of `x` and `z` which
+contain non-missing values. In essense:
 
 ```
-sx, sy = skipmissings(x, y)
-```
-
-and call
-
-```
+inds = .!missing.(x) .& .!missing.(z)
+sx = view(x, inds); sy = view(y, inds)
 f(sx, y, sy)
-
 ```
 
 # Examples
