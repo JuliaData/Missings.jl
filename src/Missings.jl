@@ -491,19 +491,11 @@ end
 """
     emptymissing(f)
 
-Return a function that takes a single positional argument `x` and
+Return a function that takes at least one positional argument `x` and
 returns `missing` if `x` is empty (`isempty(x)` returns `true`)
-and otherwise returns `f(x)`.
+and otherwise returns `f(x, args...; kwargs...)`, where `args` are following
+positional arguments passed to `f` and `kwargs` are its keyword arguments.
 
 # Examples
-```
-julia> emptymissing(last)([])
-missing
-
-julia> emptymissing(last)([1, 2, 3])
-3
-```
-"""
-emptymissing(f) = x -> isempty(x) ? missing : f(x)
 
 end # module
