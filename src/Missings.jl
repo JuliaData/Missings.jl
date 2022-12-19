@@ -2,7 +2,7 @@ module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
        Missing, MissingException, levels, coalesce, passmissing, nonmissingtype,
-       skipmissings
+       skipmissings, emptymissing
 
 using Base: ismissing, missing, Missing, MissingException
 
@@ -459,7 +459,7 @@ end
 Return a vector similar to the array wrapped by the given `SkipMissings` iterator
 but skipping all elements with a `missing` value in one of the iterators passed
 to `skipmissing` and elements for which `f` returns `false`. This method
-only applies when all iterators passed to `skipmissings` are arrays. 
+only applies when all iterators passed to `skipmissings` are arrays.
 
 # Examples
 ```
@@ -487,5 +487,23 @@ function filter(f, itr::SkipMissingsofArrays)
     end
     y
 end
+
+"""
+    emptymissing(f)
+
+Return a function that takes a single positional argument `x` and
+returns `missing` if `x` is empty (`isempty(x)` returns `true`)
+and otherwise returns `f(x)`.
+
+# Examples
+```
+julia> emptymissing(last)([])
+missing
+
+julia> emptymissing(last)([1, 2, 3])
+3
+```
+"""
+emptymissing(f) = x -> isempty(x) ? missing : f(x)
 
 end # module
