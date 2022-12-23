@@ -246,4 +246,15 @@ struct CubeRooter end
             @inferred Union{Missing, Int} reduce(+, mx)
         end
     end
+
+@testset "emptymissing" begin
+    @test emptymissing(last)([]) === missing
+    @test emptymissing(last)([1, 2, 3]) === 3
+    @test emptymissing(sum)(skipmissing(missings(Int, 3))) === missing
+    @test emptymissing(sum)(skipmissing([1, 2, 3])) === 6
+    fun(a, b; c) = (b, c)
+    @test emptymissing(fun)([], 1, c=2) === missing
+    @test emptymissing(fun)(3, 1, c=2) == (1, 2)
+end
+
 end
