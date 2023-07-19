@@ -2,7 +2,7 @@ module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
        Missing, MissingException, levels, coalesce, passmissing, nonmissingtype,
-       skipmissings, emptymissing
+       skipmissings, emptymissing, missingsmallest, missingsless
 
 using Base: ismissing, missing, Missing, MissingException
 
@@ -513,5 +513,33 @@ julia> emptymissing(first)([1], 2)
 ```
 """
 emptymissing(f) = (x, args...; kwargs...) -> isempty(x) ? missing : f(x, args...; kwargs...)
+
+# Variant of `isless` where `missing` is the smallest value
+"""
+    missingsmallest(f::Function)
+
+Creates a function of two arguments `x` and `y` that tests whether `x` is less
+than `y` such that `missing` is always less than the other argument. In other
+words, modifies the partial order function `f` such that `missing` is the
+smallest possible value, and all other non-`missing` values are compared
+according to `f`.
+
+See also: [`missingsless`](@ref), the standard order where `missing` is the
+smallest possible value.
+
+# Examples
+```
+julia> missingsmallest(isless)(missing, Inf)
+true
+
+julia> missingsless(-Inf, missing)
+false
+```
+"""
+missingsmallest(f) = (x, y) -> ismissing(y) ? false : ismissing(x) ? true : f(x, y)
+
+" The standard partial order `isless` modified so that `missing` is always the
+smallest possible value."
+const missingsless = missingsmallest(isless)
 
 end # module

@@ -28,6 +28,8 @@ This package provides additional functionality for working with `missing` values
 - `Missings.replace` to wrap a collection in a (possibly indexable) iterator replacing `missing` with another value
 - `Missings.fail` to wrap a collection in a (possibly indexable) iterator throwing an error if `missing` is encountered
 - `skipmissings` to loop through a collection of iterators excluding indices where any iterators are `missing`
+- `missingsmallest(f)` to create a partial order function that behaves as `f` and making `missing` the smallest value
+- `missingsless` the standard `isless` function modified so that `missing` is less than any other element
 
 ## Contributing and Questions
 
