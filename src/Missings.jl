@@ -518,26 +518,51 @@ emptymissing(f) = (x, args...; kwargs...) -> isempty(x) ? missing : f(x, args...
     missingsmallest(f)
 
 Creates a function of two arguments `x` and `y` that tests whether `x` is less
-than `y` such that `missing` is always less than the other argument. In other
-words, modifies the partial order function `f` such that `missing` is the
-smallest possible value, and all other non-`missing` values are compared
-according to `f`.
+than `y` such that `missing` is always less than the other argument. In other 
+words, returns a modified version of the partial order function `f` such that
+`missing` is the smallest possible value, and all other non-`missing` values are
+compared according to `f`.
 
 See also: [`missingsless`](@ref), equivalent to `missingsmallest(isless)`
 
 # Examples
 ```
-julia> missingsmallest(isless)(missing, Inf)
-true
+julia> missingsmallest(Base.isgreater)(missing, Inf)
+false
 
 julia> missingsless(-Inf, missing)
 false
 ```
 """
-missingsmallest(f) = (x, y) -> ismissing(y) ? false : ismissing(x) ? true : f(x, y)
+@inline missingsmallest(f) = (x, y) -> ismissing(y) ? false : ismissing(x) ? true : f(x, y)
 
 " The standard partial order `isless` modified so that `missing` is always the
 smallest possible value."
-const missingsless = missingsmallest(isless)
+
+"""
+    missingsless(x, y)
+
+The standard partial order `isless` modified so that `missing` is always the
+smallest possible value. The expected behaviour is the following:
+- If neither argument is `missing`, the function behaves exactly as `isless`.
+- If `x` is `missing` the result will be `true` regardless of the value of `y`.
+- If `y` is `missing` the result will be `false` regardless of the value of `x`.
+
+See also [`missingsmallest`](@ref), which modifies a partial order function and
+yields a function that behaves as the expected behaviour outlined above.
+
+# Examples
+```
+julia> missingsless(missing, Inf)
+true
+
+julia> missingsless(-Inf, missing)
+false
+
+julia> missingsless(missing, missing)
+true
+```
+"""
+missingsless(x, y) = missingsmallest(isless)(x, y)
 
 end # module
