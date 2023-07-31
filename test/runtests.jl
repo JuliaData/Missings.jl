@@ -263,6 +263,13 @@ end
     @test missingsless(missing, missing) == false
     @test missingsless(3, 4) == true
     @test missingsless(-Inf, Inf) == true 
+
+    ≪(x, y) = isless(10*x, y) # "Much greater than" function
+    missings_ll = missingsmallest(≪)
+    @test missings_ll(missing, Inf) == true
+    @test missings_ll(-Inf, missing) == false
+    @test missings_ll(1, 2) == false
+    @test missings_ll(1, 200) == true
 end
 
 end

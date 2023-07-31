@@ -527,8 +527,8 @@ See also: [`missingsless`](@ref), equivalent to `missingsmallest(isless)`
 
 # Examples
 ```
-julia> missingsmallest(Base.isgreater)(missing, Inf)
-false
+julia> missingsmallest((x, y) -> isless(x, 10*y))(missing, Inf)
+true
 
 julia> missingsless(-Inf, missing)
 false
