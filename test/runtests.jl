@@ -260,6 +260,7 @@ end
 @testset "missingsmallest" begin
     @test missingsless(missing, Inf) == true
     @test missingsless(-Inf, missing) == false
+    @test missingsless(missing, missing) == false
     @test missingsless(3, 4) == true
     @test missingsless(-Inf, Inf) == true 
 end

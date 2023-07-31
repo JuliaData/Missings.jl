@@ -514,9 +514,8 @@ julia> emptymissing(first)([1], 2)
 """
 emptymissing(f) = (x, args...; kwargs...) -> isempty(x) ? missing : f(x, args...; kwargs...)
 
-# Variant of `isless` where `missing` is the smallest value
 """
-    missingsmallest(f::Function)
+    missingsmallest(f)
 
 Creates a function of two arguments `x` and `y` that tests whether `x` is less
 than `y` such that `missing` is always less than the other argument. In other
@@ -524,8 +523,7 @@ words, modifies the partial order function `f` such that `missing` is the
 smallest possible value, and all other non-`missing` values are compared
 according to `f`.
 
-See also: [`missingsless`](@ref), the standard order where `missing` is the
-smallest possible value.
+See also: [`missingsless`](@ref), equivalent to `missingsmallest(isless)`
 
 # Examples
 ```
