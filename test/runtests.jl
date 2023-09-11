@@ -258,11 +258,11 @@ struct CubeRooter end
 end
 
 @testset "missingsmallest" begin
-    @test missingsless(missing, Inf) == true
-    @test missingsless(-Inf, missing) == false
-    @test missingsless(missing, missing) == false
-    @test missingsless(3, 4) == true
-    @test missingsless(-Inf, Inf) == true 
+    @test missingsmallest(missing, Inf) == true
+    @test missingsmallest(-Inf, missing) == false
+    @test missingsmallest(missing, missing) == false
+    @test missingsmallest(3, 4) == true
+    @test missingsmallest(-Inf, Inf) == true 
 
     ≪(x, y) = isless(10*x, y) # "Much greater than" function
     missings_ll = missingsmallest(≪)
@@ -270,6 +270,9 @@ end
     @test missings_ll(-Inf, missing) == false
     @test missings_ll(1, 2) == false
     @test missings_ll(1, 200) == true
+
+    @test_throws MethodError missingsmallest(isless)(isless)
+    @test missingsmallest !== missingsmallest(isless)
 end
 
 end

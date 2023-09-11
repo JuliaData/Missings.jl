@@ -2,7 +2,7 @@ module Missings
 
 export allowmissing, disallowmissing, ismissing, missing, missings,
        Missing, MissingException, levels, coalesce, passmissing, nonmissingtype,
-       skipmissings, emptymissing, missingsmallest, missingsless
+       skipmissings, emptymissing, missingsmallest
 
 using Base: ismissing, missing, Missing, MissingException
 
@@ -514,6 +514,11 @@ julia> emptymissing(first)([1], 2)
 """
 emptymissing(f) = (x, args...; kwargs...) -> isempty(x) ? missing : f(x, args...; kwargs...)
 
+# Only for internal use. Allows dispatch over anonymous functions.
+struct MissingSmallest{T}
+    lt::T
+end
+
 """
     missingsmallest(f)
 
@@ -522,8 +527,6 @@ than `y` such that `missing` is always less than the other argument. In other
 words, returns a modified version of the partial order function `f` such that
 `missing` is the smallest possible value, and all other non-`missing` values are
 compared according to `f`.
-
-See also: [`missingsless`](@ref), equivalent to `missingsmallest(isless)`
 
 # Examples
 ```
@@ -534,13 +537,14 @@ julia> missingsless(-Inf, missing)
 false
 ```
 """
-@inline missingsmallest(f) = (x, y) -> ismissing(y) ? false : ismissing(x) ? true : f(x, y)
+missingsmallest(f) = MissingSmallest(f)
+
 
 " The standard partial order `isless` modified so that `missing` is always the
 smallest possible value."
 
 """
-    missingsless(x, y)
+    missingsmallest(x, y)
 
 The standard partial order `isless` modified so that `missing` is always the
 smallest possible value. The expected behaviour is the following:
@@ -553,16 +557,34 @@ yields a function that behaves as the expected behaviour outlined above.
 
 # Examples
 ```
-julia> missingsless(missing, Inf)
+julia> missingsmallest(missing, Inf)
 true
 
-julia> missingsless(-Inf, missing)
+julia> missingsmallest(-Inf, missing)
 false
 
-julia> missingsless(missing, missing)
+julia> missingsmallest(missing, missing)
 true
 ```
 """
-missingsless(x, y) = missingsmallest(isless)(x, y)
+missingsmallest(x, y) = missingsmallest(isless)(x, y)
+
+(ms::MissingSmallest)(x, y) = ismissing(y) ? false : ismissing(x) ? true : ms.lt(x, y)
+
+# Some optimizations
+const _MissingSmallest = Union{MissingSmallest, typeof(missingsmallest)}
+
+@static if isdefined(Base.Sort, :MissingOptimization) && isdefined(Base.Sort, :_sort!)
+    function Base.Sort._sort!(v::AbstractVector, a::Base.Sort.MissingOptimization,
+        o::Base.Order.Lt{<:_MissingSmallest}, kw)
+        # put missing at beginning
+        Base.Sort._sort!(v, a.next, withoutmissingordering(o), kw...;hi=new_hi)
+    end
+    function Base.Sort._sort!(v::AbstractVector, a::Base.Sort.MissingOptimization,
+        o::Base.Order.ReverseOrdering{Base.Order.Lt{<:_MissingSmallest}}, kw)
+        # put missing at end
+        Base.Sort._sort!(v, a.next, ReverseOrdering(withoutmissingordering(o.fwd)), kw...; lo=new_lo)
+    end
+end
 
 end # module
