@@ -539,10 +539,6 @@ false
 """
 missingsmallest(f) = MissingSmallest(f)
 
-
-" The standard partial order `isless` modified so that `missing` is always the
-smallest possible value."
-
 """
     missingsmallest(x, y)
 
@@ -552,11 +548,22 @@ smallest possible value. The expected behaviour is the following:
 - If `x` is `missing` the result will be `true` regardless of the value of `y`.
 - If `y` is `missing` the result will be `false` regardless of the value of `x`.
 
-See also [`missingsmallest`](@ref), which modifies a partial order function and
-yields a function that behaves as the expected behaviour outlined above.
+See also [`missingsmallest`](@ref), which is equivalent to using
+`missingsmallest(isless)`. These functions can be used together with sorting
+functions such that the first elements of the newly sorted Array are placed
+first.
 
 # Examples
 ```
+julia> v = [missing, 10, missing, 1, 2]
+julia> sort(v, lt=missingsmallest)
+5-element Vector{Union{Missing, Int64}}:
+   missing
+   missing
+  1
+  2
+ 10
+
 julia> missingsmallest(missing, Inf)
 true
 
@@ -570,21 +577,5 @@ true
 missingsmallest(x, y) = missingsmallest(isless)(x, y)
 
 (ms::MissingSmallest)(x, y) = ismissing(y) ? false : ismissing(x) ? true : ms.lt(x, y)
-
-# Some optimizations
-const _MissingSmallest = Union{MissingSmallest, typeof(missingsmallest)}
-
-@static if isdefined(Base.Sort, :MissingOptimization) && isdefined(Base.Sort, :_sort!)
-    function Base.Sort._sort!(v::AbstractVector, a::Base.Sort.MissingOptimization,
-        o::Base.Order.Lt{<:_MissingSmallest}, kw)
-        # put missing at beginning
-        Base.Sort._sort!(v, a.next, withoutmissingordering(o), kw...;hi=new_hi)
-    end
-    function Base.Sort._sort!(v::AbstractVector, a::Base.Sort.MissingOptimization,
-        o::Base.Order.ReverseOrdering{Base.Order.Lt{<:_MissingSmallest}}, kw)
-        # put missing at end
-        Base.Sort._sort!(v, a.next, ReverseOrdering(withoutmissingordering(o.fwd)), kw...; lo=new_lo)
-    end
-end
 
 end # module
