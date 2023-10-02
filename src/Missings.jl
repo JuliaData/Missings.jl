@@ -528,12 +528,17 @@ words, returns a modified version of the partial order function `f` such that
 `missing` is the smallest possible value, and all other non-`missing` values are
 compared according to `f`.
 
+The traditional `isless` function modified to treat `missing` as the smallest
+value can be accessed by using the 2-argument `missingsmallest(x, y)` function,
+see [`missingsmallest`](@ref).
+
 # Examples
 ```
-julia> missingsmallest((x, y) -> isless(x, 10*y))(missing, Inf)
+julia> ismuchless = missingsmallest((x, y) -> isless(x, 10*y))
+julia> ismuchless(1, 100)
 true
 
-julia> missingsless(-Inf, missing)
+julia> ismuchless(-Inf, missing)
 false
 ```
 """
@@ -548,10 +553,10 @@ smallest possible value. The expected behaviour is the following:
 - If `x` is `missing` the result will be `true` regardless of the value of `y`.
 - If `y` is `missing` the result will be `false` regardless of the value of `x`.
 
-See also [`missingsmallest`](@ref), which is equivalent to using
-`missingsmallest(isless)`. These functions can be used together with sorting
-functions such that the first elements of the newly sorted Array are placed
-first.
+See also [`missingsmallest`](@ref), the 1-argument function which takes a
+partial ordering function (like `isless`) and modifies it to treat `missing` as
+explained above. These functions can be used together with sorting functions
+such that the first elements of the newly sorted Array are placed first.
 
 # Examples
 ```
