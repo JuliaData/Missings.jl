@@ -522,9 +522,9 @@ end
 """
     missingsmallest(f)
 
-Creates a function of two arguments `x` and `y` that tests whether `x` is less
+Return a function of two arguments `x` and `y` that tests whether `x` is less
 than `y` such that `missing` is always less than the other argument. In other 
-words, returns a modified version of the partial order function `f` such that
+words, return a modified version of the partial order function `f` such that
 `missing` is the smallest possible value, and all other non-`missing` values are
 compared according to `f`.
 
@@ -548,26 +548,37 @@ missingsmallest(f) = MissingSmallest(f)
     missingsmallest(x, y)
 
 The standard partial order `isless` modified so that `missing` is always the
-smallest possible value. The expected behaviour is the following:
+smallest possible value:
 - If neither argument is `missing`, the function behaves exactly as `isless`.
 - If `x` is `missing` the result will be `true` regardless of the value of `y`.
 - If `y` is `missing` the result will be `false` regardless of the value of `x`.
 
-See also [`missingsmallest`](@ref), the 1-argument function which takes a
-partial ordering function (like `isless`) and modifies it to treat `missing` as
-explained above. These functions can be used together with sorting functions
-such that the first elements of the newly sorted Array are placed first.
+See also the 1-argument method which takes a partial ordering function (like
+`isless`) and modifies it to treat `missing` as explained above. These functions
+can be used together with sorting functions so that missing values are sorted
+first. This is useful in particular so that when sorting in reverse order
+missing values appear at the end.
 
 # Examples
 ```
 julia> v = [missing, 10, missing, 1, 2]
 julia> sort(v, lt=missingsmallest)
+
 5-element Vector{Union{Missing, Int64}}:
    missing
    missing
   1
   2
  10
+
+julia> sort(v, lt=missingsmallest, rev=true)
+
+5-element Vector{Union{Missing, Int64}}:
+ 10
+  2
+  1
+   missing
+   missing
 
 julia> missingsmallest(missing, Inf)
 true
