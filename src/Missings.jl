@@ -528,17 +528,21 @@ words, return a modified version of the partial order function `f` such that
 `missing` is the smallest possible value, and all other non-`missing` values are
 compared according to `f`.
 
-The traditional `isless` function modified to treat `missing` as the smallest
-value can be accessed by using the 2-argument `missingsmallest(x, y)` function,
-see [`missingsmallest`](@ref).
+The behavior of the standard `isless` function modified to treat `missing` as
+the smallest value can be obtained by calling the 2-argument `missingsmallest(x,
+y)` function. This is equivalent to `missingsmallest(isless)(x, y)`.
 
 # Examples
 ```
-julia> ismuchless = missingsmallest((x, y) -> isless(x, 10*y))
-julia> ismuchless(1, 100)
+julia> lengthmissing = passmissing(length)
+julia> isshorter = missingsmallest((s1, s2) -> isless(lengthmissing(s1), lengthmissing(s2)))
+julia> isshorter("short", "longstring")
 true
 
-julia> ismuchless(-Inf, missing)
+julia> isshorter("longstring", "short")
+false
+
+julia> isshorter("", missing) # Is shorter than length 0?
 false
 ```
 """
