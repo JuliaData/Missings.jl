@@ -273,8 +273,7 @@ end
     @test missingsmallest(missing, (1e3, 1e4)) == true
     
     # Compare strings by length, not lexicographically
-    lengthmissing = passmissing(length)
-    isshorter = missingsmallest((s1, s2) -> isless(lengthmissing(s1), lengthmissing(s2)))
+    isshorter = missingsmallest((s1, s2) -> isless(length(s1), length(s2)))
     @test isshorter("short", "longstring") == true
     @test isshorter("longstring", "short") == false
     @test isshorter(missing, "short") == true
