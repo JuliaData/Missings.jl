@@ -541,7 +541,7 @@ true
 julia> isshorter("longstring", "short")
 false
 
-julia> isshorter("", missing) # Is shorter than length 0?
+julia> isshorter("", missing)
 false
 ```
 """
