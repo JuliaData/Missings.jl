@@ -210,6 +210,13 @@ passmissing(f) = PassMissing{Core.Typeof(f)}(f)
 
 struct SpreadMissings{F} <: Function
     f::F
+    spread::Symbol
+    function SpreadMissings(f, spread)
+        if !(spread in (:default, :nonmissing, :none))
+            throw(ArgumentError("spread must be either :default, :nonmissing, or :none"))
+        end
+        new{Core.Typeof(f)}(f, spread)
+    end
 end
 
 function non_spreadabble_check(t::Union{AbstractDict, NamedTuple, Tuple})
@@ -220,14 +227,44 @@ function non_spreadabble_check(t::Union{AbstractDict, NamedTuple, Tuple})
 end
 non_spreadabble_check(x) = nothing
 
+"""
+Given an input vector `a` where `nonmissinginds` is guaranteed
+to not include any missing values, return a `SubArray` referencing
+the `nonmissinginds`. The element type of the returned output
+does not include `missing`.
+"""
+nomissing_subarray(a::AbstractVector, nonmissinginds::AbstractVector) =
+    SubArray{nonmissingtype(eltype(a)), 1, typeof(a), Tuple{typeof(nonmissinginds)}, true}(a, (nonmissinginds,), 0, 1)
+
+function maybespread(res, vecs, spread)
+    res = f.f(newargs...; new_kwargs...)
+
+    if spread == :default || spread == :nonmissinginds
+        out = similar(res, Union{eltype(res), Missing}, length(vecs[1]))
+        fill!(out, missing)
+        out[nonmissingmask] .= res
+
+        return out
+    else
+        return res
+    end
+
+    return out
+end
+
 function (f::SpreadMissings{F})(args...; kwargs...) where {F}
     kwargs_vals = values(values(kwargs))
     xs = tuple(args..., kwargs_vals...)
     foreach(non_spreadabble_check, xs)
 
+    # Detect vector inputs which contain missing in
+    # either the main arguments or keyword arguments
     if any(x -> x isa AbstractVector{>:Missing}, xs)
+        # Check that all vector inputs have the
+        # same indices.
+        #
+        # TODO: Allow users to protect vector inputs
         vecs = Base.filter(x -> x isa AbstractVector, xs)
-
         findex = eachindex(first(vecs))
         if !(all(x -> eachindex(x) == findex, vecs[2:end]))
             d = Dict()
@@ -256,11 +293,10 @@ function (f::SpreadMissings{F})(args...; kwargs...) where {F}
             nonmissingmask .&= .!ismissing.(v)
         end
         nonmissinginds = findall(nonmissingmask)
-
         newargs = ntuple(length(args)) do i
             a = args[i]
             if a isa AbstractVector
-                view(a, nonmissinginds)
+                nomissing_subarray(a, nonmissinginds)
             else
                 a
             end
@@ -269,33 +305,20 @@ function (f::SpreadMissings{F})(args...; kwargs...) where {F}
         new_kwargs_vals = ntuple(length(kwargs_vals)) do i
             a = kwargs_vals[i]
             if a isa AbstractVector
-                view(a, nonmissinginds)
+                nomissing_subarray(a, nonmissinginds)
             else
                 a
             end
         end
+
         new_kwargs = NamedTuple{keys(kwargs)}(new_kwargs_vals)
-
-        res = f.f(newargs...; new_kwargs...)
-
-        if res isa AbstractVector
-            out = similar(res, Union{eltype(res), Missing}, length(vecs[1]))
-            fill!(out, missing)
-            out[nonmissingmask] .= res
-        else
-            out = similar(vecs[1], Union{typeof(res), Missing})
-            fill!(out, missing)
-            out[nonmissingmask] .= Ref(res)
-        end
-
-        return out
     else
         return f.f(xs...; kwargs...)
     end
 end
 
 """
-    spreadmissings(f)
+    spreadmissings(f; spread = :default)
 
 Given a function `f`, wraps a function `f` but performs a transformation
 on arguments before executing. Given the call
@@ -335,8 +358,28 @@ julia> spreadmissings(restricted_fun)(x, y)
   missing
   missing
 ```
+
+`spreadmissings` allows control over how the output from `f` is "spread"
+along with respect to missing values.
+
+* `:default`:
+  * If `output` is a `Vector` with the same length as the number of
+    jointly non-missing elements of the inputs `output` is "spread"
+    to match the non-missing elements of the inputs.
+  * If the `output` is a `Vector` whose length is not the same
+    as the length of number of non-missing elements of the inputs,
+    a `DimensionMismatch` error is thrown.
+  * If the output is not a `Vector`, `output` is simply returned directly
+* `:nonmissing`:
+  * If `output` is a `Vector`, behavior is the same as `:default`
+  * If `output` is not a `Vector`, `output` is spread along non-missing
+    elements of the inputs.
+* `:none`: `output` is returned directly, whether a `Vector` or not.
+
+To spread a vector across all non-missing indices of inputs, wrap the
+result in `Ref`.
 """
-spreadmissings(f) = SpreadMissings{Core.Typeof(f)}(f)
+spreadmissings(f; spread = :default) = SpreadMissings(f, spread)
 
 """
    skipmissings(args...)
