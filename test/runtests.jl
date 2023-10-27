@@ -4,6 +4,8 @@ using Test, SparseArrays, Missings
 struct CubeRooter end
 (::CubeRooter)(x) = cbrt(x)
 
+include("spreadmissings.jl")
+
 @testset "Missings" begin
     x = Missings.replace([1, 2, missing, 4], 3)
     @test eltype(x) === Int
