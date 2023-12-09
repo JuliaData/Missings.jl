@@ -145,4 +145,11 @@ t = spreadmissings(scalar; spread = :none)(1, 2; z = 9)
 @test t == 1
 
 
+# Error on missing
+alwaysone(args...; kwargs...) = 1
+@test_throws ArgumentError spreadmissings(alwaysone)(missing)
+@test_throws ArgumentError spreadmissings(alwaysone)(; a = missing)
+@test_throws ArgumentError spreadmissings(alwaysone)([1, 2], missing)
+@test_throws ArgumentError spreadmissings(alwaysone)([1, 2]; a = missing)
+
 end # module
