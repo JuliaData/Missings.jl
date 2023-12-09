@@ -219,13 +219,6 @@ struct SpreadMissings{F} <: Function
     end
 end
 
-function non_spreadable_check(t::Union{AbstractDict, NamedTuple, Tuple})
-    T = typeof(t)
-    s = "spreadmissings on $T is reserved."
-    throw(ArgumentError(s))
-end
-non_spreadable_check(x) = nothing
-
 """
     nomissing_subarray(a::AbstractVector, nonmissinginds::AbstractVector)
 
@@ -338,7 +331,6 @@ end
 function (f::SpreadMissings{F})(args...; kwargs...) where {F}
     kwargs_vals = values(values(kwargs))
     xs = tuple(args..., kwargs_vals...)
-    foreach(non_spreadable_check, xs)
 
     # Detect vector inputs which contain missing in
     # either the main arguments or keyword arguments
