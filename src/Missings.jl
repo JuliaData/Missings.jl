@@ -238,7 +238,7 @@ function nomissing_subarray(a::AbstractVector, nonmissinginds::AbstractVector)
     N = 1 # Dimension of view
     P = typeof(a) # Type of parent array
     I = Tuple{typeof(nonmissinginds)} # Type of the non-missing indices
-    L = Base.IndexStyle(a) == IndexLinear # If the type supports fast linear indexing (assumed true)
+    L = Base.IndexStyle(a) === IndexLinear # If the type supports fast linear indexing (assumed true)
     SubArray{T, N, P, I, L}(a, (nonmissinginds,), 0, 1)
 end
 
