@@ -227,6 +227,8 @@ end
 non_spreadable_check(x) = nothing
 
 """
+    nomissing_subarray(a::AbstractVector, nonmissinginds::AbstractVector)
+
 Given an input vector `a` where `nonmissinginds` is guaranteed
 to not include any missing values, return a `SubArray` referencing
 the `nonmissinginds`. The element type of the returned output
@@ -237,7 +239,7 @@ function nomissing_subarray(a::AbstractVector, nonmissinginds::AbstractVector)
     N = 1 # Dimension of view
     P = typeof(a) # Type of parent array
     I = Tuple{typeof(nonmissinginds)} # Type of the non-missing indices
-    L = Base.IndexStyle(a) == IndexLinear # If the type supports fast linear indexing (assumed true)
+    L = Base.IndexStyle(a) === IndexLinear # If the type supports fast linear indexing (assumed true)
     SubArray{T, N, P, I, L}(a, (nonmissinginds,), 0, 1)
 end
 
@@ -463,13 +465,12 @@ The `spread` keyword argument controls whether the output from
 `f` is "spread" over non-missing values.
 
 * `:default`:
-    * If `output` is a `Vector` with the same length as the number of
-      jointly non-missing elements of the inputs `output` is "spread"
+    * If output is not a vector, it is returned directly.
+    * If output is a vector with the same length as the number of
+      jointly non-missing elements of the inputs, it is "spread"
       to match the non-missing elements of the inputs.
-    * If the `output` is a `Vector` whose length is not the same
-      as the length of number of non-missing elements of the inputs,
-      a `DimensionMismatch` error is thrown.
-    * If the output is not a `Vector`, `output` is simply returned directly
+    * Otherwise a `DimensionMismatch` error is thrown.
+
 * `:nonmissing`:
     * If output is not a vector, it is is spread over non-missing
     elements of the inputs.
