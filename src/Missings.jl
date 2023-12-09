@@ -448,13 +448,12 @@ Control over how the output from `f` is "spread"
 along with respect to missing values.
 
 * `:default`:
-    * If `output` is a `Vector` with the same length as the number of
-      jointly non-missing elements of the inputs `output` is "spread"
+    * If output is not a vector, it is returned directly.
+    * If output is a vector with the same length as the number of
+      jointly non-missing elements of the inputs, it is "spread"
       to match the non-missing elements of the inputs.
-    * If the `output` is a `Vector` whose length is not the same
-      as the length of number of non-missing elements of the inputs,
-      a `DimensionMismatch` error is thrown.
-    * If the output is not a `Vector`, `output` is simply returned directly
+    * Otherwise a `DimensionMismatch` error is thrown.
+
 * `:nonmissing`:
     * If `output` is a `Vector`, behavior is the same as `:default`
     * If `output` is not a `Vector`, `output` is spread along non-missing
