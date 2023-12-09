@@ -232,7 +232,7 @@ function nomissing_subarray(a::AbstractVector, nonmissinginds::AbstractVector)
     N = 1 # Dimension of view
     P = typeof(a) # Type of parent array
     I = Tuple{typeof(nonmissinginds)} # Type of the non-missing indices
-    L = Base.IndexStyle(a) === IndexLinear # If the type supports fast linear indexing (assumed true)
+    L = Base.IndexStyle(a) === IndexLinear # If the type supports fast linear indexing
     SubArray{T, N, P, I, L}(a, (nonmissinginds,), 0, 1)
 end
 
@@ -246,8 +246,25 @@ function new_args_subarray(args::Tuple, nonmissinginds::AbstractVector)
     end
 end
 
-function maybespread_missing(f, newargs::Tuple, new_kwargs::NamedTuple, vecs::Tuple,
-    nonmissinginds::AbstractVector{<:Integer}, nonmissingmask::AbstractVector{<:Bool})
+"""
+    maybespread_missing(
+        f::SpreadMissings,
+        newargs::Tuple,
+        new_kwargs,
+        vecs::Tuple,
+        nonmissinginds::AbstractVector{<:Integer},
+        nonmissingmask::AbstractVector{<:Bool})
+
+Applied when `spreadmissing(f)(args...; kwargs...)` is called and
+`args` or `kwargs` contain a `Vector{Union{T, Missing}}`.
+"""
+function maybespread_missing(
+    f::SpreadMissings,
+    newargs::Tuple,
+    new_kwargs,
+    vecs::Tuple,
+    nonmissinginds::AbstractVector{<:Integer},
+    nonmissingmask::AbstractVector{<:Bool})
 
     spread = f.spread
     res = f.f(newargs...; new_kwargs...)
@@ -257,7 +274,6 @@ function maybespread_missing(f, newargs::Tuple, new_kwargs::NamedTuple, vecs::Tu
         # output is a vector
         if spread === :default || spread === :nonmissing
             if length(res) != length(nonmissinginds)
-
                 s = "When spreading a vector result with `spread=$(spread)`, " *
                     "length of output must match number of jointly non-"
                     "missing values in inputs "
@@ -288,7 +304,22 @@ function maybespread_missing(f, newargs::Tuple, new_kwargs::NamedTuple, vecs::Tu
     return out
 end
 
-function maybespread_nomissing(f, args, kwargs, vecs)
+"""
+    maybespread_nomissing(
+        f::SpreadMissings,
+        args::Tuple,
+        kwargs,
+        vecs::Tuple)
+
+Applied when `spreadmissing(f)(args...; kwargs...)` is called and *neither*
+`args` nor `kwargs` contain a `Vector{Union{T, Missing}}`.
+"""
+function maybespread_nomissing(
+    f::SpreadMissings,
+    args::Tuple,
+    kwargs,
+    vecs::Tuple)
+
     spread = f.spread
     res = f.f(args...; kwargs...)
 
@@ -355,7 +386,7 @@ function (f::SpreadMissings{F})(args...; kwargs...) where {F}
         newargs = new_args_subarray(args, nonmissinginds)
         new_kwargs_vals = new_args_subarray(kwargs_vals, nonmissinginds)
 
-        new_kwargs = NamedTuple{keys(kwargs)}(new_kwargs_vals)
+        new_kwargs = (k => v for (k, v) in zip(keys(kwargs), new_kwargs_vals))
         maybespread_missing(f, newargs, new_kwargs, vecs, nonmissinginds, nonmissingmask)
     # There is at least one vector, but none of the vectors can contain missing
     elseif any(x -> x isa AbstractVector, xs)
