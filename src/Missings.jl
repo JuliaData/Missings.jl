@@ -228,6 +228,8 @@ end
 non_spreadabble_check(x) = nothing
 
 """
+    nomissing_subarray(a::AbstractVector, nonmissinginds::AbstractVector)
+
 Given an input vector `a` where `nonmissinginds` is guaranteed
 to not include any missing values, return a `SubArray` referencing
 the `nonmissinginds`. The element type of the returned output
