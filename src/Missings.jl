@@ -251,6 +251,135 @@ function new_args_subarray(args::Tuple, nonmissinginds::AbstractVector)
     end
 end
 
+function spread_missing(
+    res::AbstractVector{T},
+    vecs::Tuple,
+    nonmissinginds::AbstractVector{<:Integer},
+    nonmissingmask::AbstractVector{<:Bool})::Vector{Union{Missing, T}} where {T}
+
+    if length(res) != length(nonmissinginds)
+        s = "When spreading a vector result with `spread=$(S)`, " *
+            "length of output must match number of jointly non-"
+            "missing values in inputs "
+            "(got $(length(res)) and $(length(nonmissinginds))).".
+
+        throw(DimensionMismatch(s))
+    end
+    out = similar(res, Union{eltype(res), Missing}, length(vecs[1]))
+    fill!(out, missing)
+    out[nonmissingmask] .= res
+    out
+end
+
+function maybespread_missing(
+    res::T,
+    spread::SpreadDefault,
+    vecs::Tuple,
+    nonmissinginds::AbstractVector{<:Integer},
+    nonmissingmask::AbstractVector{<:Bool})::T where{T}
+
+    res
+end
+
+function maybespread_missing(
+    res::AbstractVector{T},
+    spread::SpreadDefault,
+    vecs::Tuple,
+    nonmissinginds::AbstractVector{<:Integer},
+    nonmissingmask::AbstractVector{<:Bool})::Vector{Union{Missing, T}} where {T}
+
+    spread_missing(res, vecs, nonmissinginds, nonmissingmask)
+end
+
+function maybespread_missing(
+    res::T,
+    spread::SpreadNonMissing,
+    vecs::Tuple,
+    nonmissinginds::AbstractVector{<:Integer},
+    nonmissingmask::AbstractVector{<:Bool})::Vector{Union{Missing, T}} where{T}
+
+    out = Vector{Union{typeof(res), Missing}}(undef, length(vecs[1]))
+    fill!(out, missing)
+    out[nonmissinginds] .= Ref(res)
+    out
+end
+
+function maybespread_missing(
+    res::AbstractVector{T},
+    spread::SpreadNonMissing,
+    vecs::Tuple,
+    nonmissinginds::AbstractVector{<:Integer},
+    nonmissingmask::AbstractVector{<:Bool})::Vector{Union{Missing, T}} where {T}
+
+    spread_missing(res, vecs, nonmissinginds, nonmissingmask)
+end
+
+function maybespread_missing(
+    res::T,
+    spread::SpreadNone,
+    vecs::Tuple,
+    nonmissinginds::AbstractVector{<:Integer},
+    nonmissingmask::AbstractVector{<:Bool})::T where {T}
+
+    res
+end
+
+function spread_nomissing(
+    res::AbstractVector{T},
+    vecs::Tuple)::typeof(res) where {T}
+
+    if length(res) != length(first(vecs))
+        s = "When spreading a vector result with `spread=$(S)`, " *
+            "length of output must match number of jointly non-"
+            "missing values in inputs "
+            "(got $(length(res)) and $(length(first(vecs)))).".
+        throw(DimensionMismatch(s))
+    end
+    res
+end
+
+function maybespread_nomissing(
+    res::T,
+    spread::SpreadDefault,
+    vecs::Tuple)::T where{T}
+
+    res
+end
+
+function maybespread_nomissing(
+    res::AbstractVector{T},
+    spread::SpreadDefault,
+    vecs::Tuple)::typeof(res) where {T}
+
+    spread_nomissing(res, vecs)
+end
+
+function maybespread_nomissing(
+    res::T,
+    spread::SpreadNonMissing,
+    vecs::Tuple)::Vector{T} where{T}
+
+    out = Vector{typeof(res)}(undef, length(vecs[1]))
+    fill!(out, res)
+    out
+end
+
+function maybespread_nomissing(
+    res::AbstractVector{T},
+    spread::SpreadNonMissing,
+    vecs::Tuple)::typeof(res) where {T}
+
+    spread_nomissing(res, vecs)
+end
+
+function maybespread_nomissing(
+    res::T,
+    spread::SpreadNone,
+    vecs::Tuple)::T where {T}
+
+    res
+end
+
 """
     maybespread_missing(
         f::SpreadMissings,
@@ -263,17 +392,12 @@ end
 Applied when `spreadmissing(f)(args...; kwargs...)` is called and
 `args` or `kwargs` contain a `Vector{Union{T, Missing}}`.
 """
-function maybespread_missing(
-    f::SpreadMissings{F, S},
-    newargs::Tuple,
-    new_kwargs,
+#=function maybespread_missing(
+    res,
+    spread::AbstractSpread,
     vecs::Tuple,
     nonmissinginds::AbstractVector{<:Integer},
-    nonmissingmask::AbstractVector{<:Bool}) where {F, S}
-
-    res = f.f(newargs...; new_kwargs...)
-
-    spread = f.spread
+    nonmissingmask::AbstractVector{<:Bool})
 
     if res isa AbstractVector
         # Default and spread have the same behavior if
@@ -308,7 +432,7 @@ function maybespread_missing(
     end
 
     return out
-end
+end=#
 
 """
     maybespread_nomissing(
@@ -320,6 +444,7 @@ end
 Applied when `spreadmissing(f)(args...; kwargs...)` is called and *neither*
 `args` nor `kwargs` contain a `Vector{Union{T, Missing}}`.
 """
+#=
 function maybespread_nomissing(
     f::SpreadMissings{F, S},
     args::Tuple,
@@ -359,6 +484,7 @@ function maybespread_nomissing(
 
     return out
 end
+=#
 
 function check_indices_match(vecs...)
     Base.require_one_based_indexing(vecs...)
@@ -399,12 +525,14 @@ function (f::SpreadMissings{F, S})(args...; kwargs...) where {F, S}
         new_kwargs_vals = new_args_subarray(kwargs_vals, nonmissinginds)
 
         new_kwargs = (k => v for (k, v) in zip(keys(kwargs), new_kwargs_vals))
-        maybespread_missing(f, newargs, new_kwargs, vecs, nonmissinginds, nonmissingmask)
+        res = f.f(newargs...; new_kwargs...)
+        maybespread_missing(res, f.spread, vecs, nonmissinginds, nonmissingmask)
     # There is at least one vector, but none of the vectors can contain missing
     elseif any(x -> x isa AbstractVector, xs)
         vecs = Base.filter(x -> x isa AbstractVector, xs)
         check_indices_match(vecs...)
-        maybespread_nomissing(f, args, kwargs, vecs)
+        res = f.f(args...; kwargs...)
+        maybespread_nomissing(res, f.spread, vecs)
     else
         f.f(args...; kwargs...)
     end
