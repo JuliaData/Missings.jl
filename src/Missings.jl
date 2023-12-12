@@ -645,7 +645,7 @@ function spreadmissings(f; spread::Symbol = :default)
     elseif spread === :all
         SpreadMissings(f, SpreadAll())
     else
-       throw(ArgumentError("`spread` must be one of `:default`, `:nonmissing`, or `:none`"))
+       throw(ArgumentError("`spread` must be one of `:default`, `:nonmissing`, `:none`, or `:all`"))
     end
 end
 
