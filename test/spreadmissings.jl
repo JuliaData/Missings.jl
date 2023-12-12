@@ -90,6 +90,26 @@ end
     @test_throws DimensionMismatch spreadmissings(right_vec; spread = :none)(x, s)
 end
 
+@testset "vector, :all" begin
+    ### missings in main arg only
+    @test_throws ArgumentError spreadmissings(right_vec; spread = :all)(xmiss)
+
+    ### missing in keyword arg only
+    @test_throws ArgumentError spreadmissings(right_vec; spread = :all)(; z = ymiss)
+
+    ### missing in both main arg and keyword arg
+    @test_throws ArgumentError spreadmissings(right_vec; spread = :all)(x, xmiss; z = ymiss)
+
+    ### missings nowhere
+    @test_throws ArgumentError spreadmissings(right_vec; spread = :all)(x; z = y)
+
+    ### Mis-matched vector lengths
+    @test_throws DimensionMismatch spreadmissings(right_vec)(x, s)
+    ### no vectors
+    t = spreadmissings(right_vec)(1, 2; z = 9)
+    @test t == [-1]
+end
+
 @testset "non-vector, :default" begin
     ### missings in main arg only
     t = spreadmissings(scalar; spread = :default)(xmiss)
@@ -147,6 +167,26 @@ end
     @test_throws DimensionMismatch spreadmissings(scalar; spread = :none)(x, s)
     ### no vectors
     t = spreadmissings(scalar; spread = :none)(1, 2; z = 9)
+    @test t == 1
+end
+
+@testset "non-vector, :all" begin
+    ### missings in main arg only
+    t = spreadmissings(scalar; spread = :all)(xmiss)
+    @test t ≈ [1, 1, 1, 1]
+    ### missing in keyword arg only
+    t = spreadmissings(scalar; spread = :all)(; z = ymiss)
+    @test t ≈ [1, 1, 1, 1]
+    ### missing in both main arg and keyword arg
+    t = spreadmissings(scalar; spread = :all)(x, xmiss; z = ymiss)
+    @test t ≈ [1, 1, 1, 1]
+    ### missings nowhere
+    t = spreadmissings(scalar; spread = :all)(x; z = y)
+    @test t ≈ [1, 1, 1, 1]
+    ### Mis-matched vector lengths
+    @test_throws DimensionMismatch spreadmissings(scalar; spread = :all)(x, s)
+    ### no vectors
+    t = spreadmissings(scalar; spread = :all)(1, 2; z = 9)
     @test t == 1
 end
 
