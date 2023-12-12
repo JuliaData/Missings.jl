@@ -255,7 +255,7 @@ function spread_missing(
     res::AbstractVector{T},
     vecs::Tuple,
     nonmissinginds::AbstractVector{<:Integer},
-    nonmissingmask::AbstractVector{<:Bool})::Vector{Union{Missing, T}} where {T}
+    nonmissingmask::AbstractVector{<:Bool})::AbstractVector{Union{Missing, T}} where {T}
 
     if length(res) != length(nonmissinginds)
         s = "When spreading a vector result with `spread=$(S)`, " *
@@ -286,7 +286,7 @@ function maybespread_missing(
     spread::SpreadDefault,
     vecs::Tuple,
     nonmissinginds::AbstractVector{<:Integer},
-    nonmissingmask::AbstractVector{<:Bool})::Vector{Union{Missing, T}} where {T}
+    nonmissingmask::AbstractVector{<:Bool})::AbstractVector{Union{Missing, T}} where {T}
 
     spread_missing(res, vecs, nonmissinginds, nonmissingmask)
 end
@@ -296,7 +296,7 @@ function maybespread_missing(
     spread::SpreadNonMissing,
     vecs::Tuple,
     nonmissinginds::AbstractVector{<:Integer},
-    nonmissingmask::AbstractVector{<:Bool})::Vector{Union{Missing, T}} where{T}
+    nonmissingmask::AbstractVector{<:Bool})::AbstractVector{Union{Missing, T}} where{T}
 
     out = Vector{Union{typeof(res), Missing}}(undef, length(vecs[1]))
     fill!(out, missing)
@@ -309,7 +309,7 @@ function maybespread_missing(
     spread::SpreadNonMissing,
     vecs::Tuple,
     nonmissinginds::AbstractVector{<:Integer},
-    nonmissingmask::AbstractVector{<:Bool})::Vector{Union{Missing, T}} where {T}
+    nonmissingmask::AbstractVector{<:Bool})::AbstractVector{Union{Missing, T}} where {T}
 
     spread_missing(res, vecs, nonmissinginds, nonmissingmask)
 end
