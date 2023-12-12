@@ -225,11 +225,6 @@ struct SpreadMissings{F, S <: AbstractSpread} <: Function
     end
 end
 
-SpreadMissings(f, spread::Val{:default}) = SpreadMissings(f, SpreadDefault())
-SpreadMissings(f, spread::Val{:nonmissing}) = SpreadMissings(f, SpreadNonMissing())
-SpreadMissings(f, spread::Val{:none}) = SpreadMissings(f, SpreadNone())
-SpreadMissings(f, spread::Val{:all}) = SpreadMissings(f, SpreadAll())
-
 """
     nomissing_subarray(a::AbstractVector, nonmissinginds::AbstractVector)
 
@@ -641,8 +636,17 @@ behaves the same as `f` regardless of `spread`.
     Use the keyword `spread = :all` to emulate the `skipmissing` behavior.
 """
 function spreadmissings(f; spread::Symbol = :default)
-    SpreadMissings(f, Val(spread))
-#   throw(ArgumentError("`spread` must be one of `:default`, `:nonmissing`, or `:none`"))
+    if spread === :default
+        SpreadMissings(f, SpreadDefault())
+    elseif spread === :nonmissing
+        SpreadMissings(f, SpreadNonMissing())
+    elseif spread === :none
+        SpreadMissings(f, SpreadNone())
+    elseif spread === :all
+        SpreadMissings(f, SpreadAll())
+    else
+       throw(ArgumentError("`spread` must be one of `:default`, `:nonmissing`, or `:none`"))
+    end
 end
 
 """
