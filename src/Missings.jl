@@ -423,7 +423,8 @@ end
 
 function check_indices_match(vecs...)
     Base.require_one_based_indexing(vecs...)
-    findex = eachindex(vecs...)
+    eachindex(vecs...)
+    nothing
 end
 
 function (f::SpreadMissings{F, S})(args...; kwargs...) where {F, S}
