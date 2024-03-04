@@ -534,7 +534,8 @@ y)` function. This is equivalent to `missingsmallest(isless)(x, y)`.
 
 # Examples
 ```
-julia> isshorter = missingsmallest((s1, s2) -> isless(length(s1), length(s2)))
+julia> isshorter = missingsmallest((s1, s2) -> isless(length(s1), length(s2)));
+
 julia> isshorter("short", "longstring")
 true
 
@@ -574,7 +575,6 @@ julia> sort(v, lt=missingsmallest)
  10
 
 julia> sort(v, lt=missingsmallest, rev=true)
-
 5-element Vector{Union{Missing, Int64}}:
  10
   2
