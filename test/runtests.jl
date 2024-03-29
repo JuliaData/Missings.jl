@@ -167,7 +167,7 @@ struct CubeRooter end
     @test disallowmissing([:a 1]) == [:a 1]
     @test disallowmissing([:a 1]) isa AbstractArray{Any, 2}
     @test_throws MethodError disallowmissing([1 missing])
-    @test_throws Union{MethodError, MethodError} disallowmissing([missing missing])
+    @test_throws Union{MethodError, ArgumentError} disallowmissing([missing missing])
 
     # Lifting
     ## functor
