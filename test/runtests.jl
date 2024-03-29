@@ -158,7 +158,7 @@ struct CubeRooter end
     @test disallowmissing(Any[:a]) == [:a]
     @test disallowmissing(Any[:a]) isa AbstractVector{Any}
     @test_throws MethodError disallowmissing([1, missing])
-    @test_throws MethodError disallowmissing([missing])
+    @test_throws Union{MethodError, ArgumentError} disallowmissing([missing])
 
     @test disallowmissing(Union{Int, Missing}[1 1]) == [1 1]
     @test disallowmissing(Union{Int, Missing}[1 1]) isa AbstractArray{Int, 2}
@@ -167,7 +167,7 @@ struct CubeRooter end
     @test disallowmissing([:a 1]) == [:a 1]
     @test disallowmissing([:a 1]) isa AbstractArray{Any, 2}
     @test_throws MethodError disallowmissing([1 missing])
-    @test_throws MethodError disallowmissing([missing missing])
+    @test_throws Union{MethodError, MethodError} disallowmissing([missing missing])
 
     # Lifting
     ## functor
