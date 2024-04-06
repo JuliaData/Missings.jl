@@ -566,7 +566,6 @@ missing values appear at the end.
 # Examples
 ```jldoctest
 julia> sort(v, lt=missingsmallest)
-
 5-element Vector{Union{Missing, Int64}}:
    missing
    missing
