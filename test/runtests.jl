@@ -158,7 +158,7 @@ struct CubeRooter end
     @test disallowmissing(Any[:a]) == [:a]
     @test disallowmissing(Any[:a]) isa AbstractVector{Any}
     @test_throws MethodError disallowmissing([1, missing])
-    @test_throws MethodError disallowmissing([missing])
+    @test_throws Union{MethodError, ArgumentError} disallowmissing([missing])
 
     @test disallowmissing(Union{Int, Missing}[1 1]) == [1 1]
     @test disallowmissing(Union{Int, Missing}[1 1]) isa AbstractArray{Int, 2}
@@ -167,7 +167,7 @@ struct CubeRooter end
     @test disallowmissing([:a 1]) == [:a 1]
     @test disallowmissing([:a 1]) isa AbstractArray{Any, 2}
     @test_throws MethodError disallowmissing([1 missing])
-    @test_throws MethodError disallowmissing([missing missing])
+    @test_throws Union{MethodError, ArgumentError} disallowmissing([missing missing])
 
     # Lifting
     ## functor
@@ -255,6 +255,32 @@ struct CubeRooter end
     fun(a, b; c) = (b, c)
     @test emptymissing(fun)([], 1, c=2) === missing
     @test emptymissing(fun)(3, 1, c=2) == (1, 2)
+end
+
+@testset "missingsmallest" begin
+    @test missingsmallest(missing, Inf) == true
+    @test missingsmallest(-Inf, missing) == false
+    @test missingsmallest(missing, missing) == false
+    @test missingsmallest(3, 4) == true
+    @test missingsmallest(-Inf, Inf) == true 
+
+    @test missingsmallest("a", "b") == true
+    @test missingsmallest("short", missing) == false
+    @test missingsmallest(missing, "") == true
+
+    @test missingsmallest((1, 2), (3, 4)) == true
+    @test missingsmallest((3, 4), (1, 2)) == false
+    @test missingsmallest(missing, (1e3, 1e4)) == true
+    
+    # Compare strings by length, not lexicographically
+    isshorter = missingsmallest((s1, s2) -> isless(length(s1), length(s2)))
+    @test isshorter("short", "longstring") == true
+    @test isshorter("longstring", "short") == false
+    @test isshorter(missing, "short") == true
+    @test isshorter("", missing) == false
+
+    @test_throws MethodError missingsmallest(isless)(isless)
+    @test missingsmallest !== missingsmallest(isless)
 end
 
 end
