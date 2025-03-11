@@ -230,7 +230,7 @@ missing
 passmissing(f) = PassMissing{Core.Typeof(f)}(f)
 
 """
-   skipmissings(args...)
+    skipmissings(args...)
 
 Return a tuple of iterators wrapping each of the iterators in `args`, but
 skipping elements at positions where at least one of the iterators returns `missing`
@@ -282,7 +282,7 @@ struct SkipMissings{V, T}
 end
 
 Base.@propagate_inbounds function _anymissingindex(others::Tuple{Vararg{AbstractArray}}, i)    
-   for oth in others
+    for oth in others
         oth[i] === missing && return true
     end
 
