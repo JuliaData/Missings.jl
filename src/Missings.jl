@@ -65,13 +65,13 @@ See also: [`skipmissing`](@ref), [`Missings.fail`](@ref)
 # Examples
 ```jldoctest
 julia> collect(Missings.replace([1, missing, 2], 0))
-3-element Vector{Int64}:
+3-element Vector{$Int}:
  1
  0
  2
 
 julia> collect(Missings.replace([1 missing; 2 missing], 0))
-2×2 Matrix{Int64}:
+2×2 Matrix{$Int}:
  1  0
  2  0
 
@@ -129,7 +129,7 @@ See also: [`skipmissing`](@ref), [`Missings.replace`](@ref)
 # Examples
 ```jldoctest
 julia> collect(Missings.fail([1 2; 3 4]))
-2×2 Matrix{Int64}:
+2×2 Matrix{$Int}:
  1  2
  3  4
 
@@ -470,7 +470,7 @@ julia> x = [missing; 2:9]; y = [2:9; missing];
 julia> mx, my = skipmissings(x, y);
 
 julia> filter(isodd, collect(mx))
-3-element Vector{Int64}:
+3-element Vector{$Int}:
  3
  5
  7
@@ -508,7 +508,7 @@ julia> emptymissing(first)([], 2)
 missing
 
 julia> emptymissing(first)([1], 2)
-1-element Vector{Int64}:
+1-element Vector{$Int}:
  1
 ```
 """
@@ -566,7 +566,7 @@ missing values appear at the end.
 # Examples
 ```jldoctest
 julia> sort(v, lt=missingsmallest)
-5-element Vector{Union{Missing, Int64}}:
+5-element Vector{Union{Missing, $Int}}:
    missing
    missing
   1
@@ -574,7 +574,7 @@ julia> sort(v, lt=missingsmallest)
  10
 
 julia> sort(v, lt=missingsmallest, rev=true)
-5-element Vector{Union{Missing, Int64}}:
+5-element Vector{Union{Missing, $Int}}:
  10
   2
   1
