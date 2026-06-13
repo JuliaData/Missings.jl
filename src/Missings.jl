@@ -237,7 +237,7 @@ skipping elements at positions where at least one of the iterators returns `miss
 (listwise deletion of missing values).
 
 # Examples
-```jldoctest
+```julia-repl
 julia> x = [1, 2, missing, 4]; y = [1, 2, 3, missing];
 
 julia> tx, ty = skipmissings(x, y);
@@ -464,7 +464,7 @@ to `skipmissing` and elements for which `f` returns `false`. This method
 only applies when all iterators passed to `skipmissings` are arrays.
 
 # Examples
-```jldoctest
+```julia-repl
 julia> x = [missing; 2:9]; y = [2:9; missing];
 
 julia> mx, my = skipmissings(x, y);
