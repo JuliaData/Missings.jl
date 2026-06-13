@@ -8,7 +8,7 @@ DataAPI = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 [compat]
 julia = "1"
 DataAPI = "1.1"
-Documenter = "1"
+Documenter = "0.27, 1"
 
 [extras]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
