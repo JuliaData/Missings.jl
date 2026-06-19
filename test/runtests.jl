@@ -1,4 +1,4 @@
-using Test, SparseArrays, Missings
+using Test, SparseArrays, Documenter, Missings
 
 # Must be defined outside testset on v1.0
 struct CubeRooter end
@@ -247,40 +247,44 @@ struct CubeRooter end
         end
     end
 
-@testset "emptymissing" begin
-    @test emptymissing(last)([]) === missing
-    @test emptymissing(last)([1, 2, 3]) === 3
-    @test emptymissing(sum)(skipmissing(missings(Int, 3))) === missing
-    @test emptymissing(sum)(skipmissing([1, 2, 3])) === 6
-    fun(a, b; c) = (b, c)
-    @test emptymissing(fun)([], 1, c=2) === missing
-    @test emptymissing(fun)(3, 1, c=2) == (1, 2)
-end
+    @testset "emptymissing" begin
+        @test emptymissing(last)([]) === missing
+        @test emptymissing(last)([1, 2, 3]) === 3
+        @test emptymissing(sum)(skipmissing(missings(Int, 3))) === missing
+        @test emptymissing(sum)(skipmissing([1, 2, 3])) === 6
+        fun(a, b; c) = (b, c)
+        @test emptymissing(fun)([], 1, c=2) === missing
+        @test emptymissing(fun)(3, 1, c=2) == (1, 2)
+    end
 
-@testset "missingsmallest" begin
-    @test missingsmallest(missing, Inf) == true
-    @test missingsmallest(-Inf, missing) == false
-    @test missingsmallest(missing, missing) == false
-    @test missingsmallest(3, 4) == true
-    @test missingsmallest(-Inf, Inf) == true 
+    @testset "missingsmallest" begin
+        @test missingsmallest(missing, Inf) == true
+        @test missingsmallest(-Inf, missing) == false
+        @test missingsmallest(missing, missing) == false
+        @test missingsmallest(3, 4) == true
+        @test missingsmallest(-Inf, Inf) == true
 
-    @test missingsmallest("a", "b") == true
-    @test missingsmallest("short", missing) == false
-    @test missingsmallest(missing, "") == true
+        @test missingsmallest("a", "b") == true
+        @test missingsmallest("short", missing) == false
+        @test missingsmallest(missing, "") == true
 
-    @test missingsmallest((1, 2), (3, 4)) == true
-    @test missingsmallest((3, 4), (1, 2)) == false
-    @test missingsmallest(missing, (1e3, 1e4)) == true
-    
-    # Compare strings by length, not lexicographically
-    isshorter = missingsmallest((s1, s2) -> isless(length(s1), length(s2)))
-    @test isshorter("short", "longstring") == true
-    @test isshorter("longstring", "short") == false
-    @test isshorter(missing, "short") == true
-    @test isshorter("", missing) == false
+        @test missingsmallest((1, 2), (3, 4)) == true
+        @test missingsmallest((3, 4), (1, 2)) == false
+        @test missingsmallest(missing, (1e3, 1e4)) == true
 
-    @test_throws MethodError missingsmallest(isless)(isless)
-    @test missingsmallest !== missingsmallest(isless)
-end
+        # Compare strings by length, not lexicographically
+        isshorter = missingsmallest((s1, s2) -> isless(length(s1), length(s2)))
+        @test isshorter("short", "longstring") == true
+        @test isshorter("longstring", "short") == false
+        @test isshorter(missing, "short") == true
+        @test isshorter("", missing) == false
 
+        @test_throws MethodError missingsmallest(isless)(isless)
+        @test missingsmallest !== missingsmallest(isless)
+    end
+
+    @static if VERSION >= v"1.6.0"
+        DocMeta.setdocmeta!(Missings, :DocTestSetup, :(using Missings))
+        doctest(Missings; manual = false)
+    end
 end

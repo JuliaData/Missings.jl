@@ -65,13 +65,13 @@ See also: [`skipmissing`](@ref), [`Missings.fail`](@ref)
 # Examples
 ```jldoctest
 julia> collect(Missings.replace([1, missing, 2], 0))
-3-element Array{Int64,1}:
+3-element Vector{$Int}:
  1
  0
  2
 
 julia> collect(Missings.replace([1 missing; 2 missing], 0))
-2×2 Array{Int64,2}:
+2×2 Matrix{$Int}:
  1  0
  2  0
 
@@ -129,7 +129,7 @@ See also: [`skipmissing`](@ref), [`Missings.replace`](@ref)
 # Examples
 ```jldoctest
 julia> collect(Missings.fail([1 2; 3 4]))
-2×2 Array{Int64,2}:
+2×2 Matrix{$Int}:
  1  2
  3  4
 
@@ -216,9 +216,9 @@ julia> passmissing(sqrt)(missing)
 missing
 
 julia> passmissing(sqrt).([missing, 4])
-2-element Array{Union{Missing, Float64},1}:
+2-element Vector{Union{Missing, Float64}}:
   missing
-   2.0
+ 2.0
 
 julia> passmissing((x,y)->"\$x \$y")(1, 2)
 "1 2"
@@ -237,17 +237,19 @@ skipping elements at positions where at least one of the iterators returns `miss
 (listwise deletion of missing values).
 
 # Examples
-```
+```julia-repl
 julia> x = [1, 2, missing, 4]; y = [1, 2, 3, missing];
 
-julia> tx, ty = skipmissings(x, y)
-(Missings.SkipMissings{Array{Union{Missing, Int64},1},Tuple{Array{Union{Missing, Int64},1}}}
-(Union{Missing, Int64}[1, 2, missing, 4], (Union{Missing, Int64}[1, 2, 3, missing],)), Missi
-ngs.SkipMissings{Array{Union{Missing, Int64},1},Tuple{Array{Union{Missing, Int64},1}}}(Union
-{Missing, Int64}[1, 2, 3, missing], (Union{Missing, Int64}[1, 2, missing, 4],)))
+julia> tx, ty = skipmissings(x, y);
+
+julia> tx
+Missings.SkipMissings{Vector{Union{Missing, Int64}}}(Union{Missing, Int64}[1, 2, missing, 4]) comprised of 2 iterators
+
+julia> ty
+Missings.SkipMissings{Vector{Union{Missing, Int64}}}(Union{Missing, Int64}[1, 2, 3, missing]) comprised of 2 iterators
 
 julia> collect(tx)
-2-element Array{Int64,1}:
+2-element Vector{Int64}:
  1
  2
 
@@ -281,7 +283,7 @@ struct SkipMissings{V, T}
     others::T
 end
 
-Base.@propagate_inbounds function _anymissingindex(others::Tuple{Vararg{AbstractArray}}, i)    
+Base.@propagate_inbounds function _anymissingindex(others::Tuple{Vararg{AbstractArray}}, i)
     for oth in others
         oth[i] === missing && return true
     end
@@ -301,7 +303,7 @@ end
 const SkipMissingsofArrays = SkipMissings{V, T} where
     {V <: AbstractArray, T <: Tuple{Vararg{AbstractArray}}}
 
-function Base.show(io::IO, mime::MIME"text/plain", itr::SkipMissings{V}) where V 
+function Base.show(io::IO, mime::MIME"text/plain", itr::SkipMissings{V}) where V
     print(io, SkipMissings, '{', V, '}', '(', itr.x, ')', " comprised of " *
           "$(length(itr.others) + 1) iterators")
 end
@@ -358,7 +360,7 @@ end
 @inline function Base.getindex(itr::SkipMissingsofArrays, i)
     @boundscheck checkbounds(itr.x, i)
     @inbounds xi = itr.x[i]
-    if xi === missing || @inbounds _anymissingindex(itr.others, i) 
+    if xi === missing || @inbounds _anymissingindex(itr.others, i)
         throw(MissingException("the value at index $i is missing for some element"))
     end
     return xi
@@ -462,18 +464,16 @@ to `skipmissing` and elements for which `f` returns `false`. This method
 only applies when all iterators passed to `skipmissings` are arrays.
 
 # Examples
-```
-julia> x = [missing; 2:9]; y = [1:9; missing];
+```julia-repl
+julia> x = [missing; 2:9]; y = [2:9; missing];
 
 julia> mx, my = skipmissings(x, y);
 
-julia> filter(isodd, mx)
-4-element Array{Int64,1}:
+julia> filter(isodd, collect(mx))
+3-element Vector{$Int}:
  3
  5
  7
- 9
-
 ```
 """
 function filter(f, itr::SkipMissingsofArrays)
@@ -497,7 +497,7 @@ and otherwise returns `f(x, args...; kwargs...)`, where `args` are following
 positional arguments passed to `f` and `kwargs` are its keyword arguments.
 
 # Examples
-```
+```jldoctest
 julia> emptymissing(last)([])
 missing
 
@@ -508,8 +508,8 @@ julia> emptymissing(first)([], 2)
 missing
 
 julia> emptymissing(first)([1], 2)
-1-element Vector{Int64}:
-1
+1-element Vector{$Int}:
+ 1
 ```
 """
 emptymissing(f) = (x, args...; kwargs...) -> isempty(x) ? missing : f(x, args...; kwargs...)
@@ -523,7 +523,7 @@ end
     missingsmallest(f)
 
 Return a function of two arguments `x` and `y` that tests whether `x` is less
-than `y` such that `missing` is always less than the other argument. In other 
+than `y` such that `missing` is always less than the other argument. In other
 words, return a modified version of the partial order function `f` such that
 `missing` is the smallest possible value, and all other non-`missing` values are
 compared according to `f`.
@@ -533,7 +533,7 @@ the smallest value can be obtained by calling the 2-argument `missingsmallest(x,
 y)` function. This is equivalent to `missingsmallest(isless)(x, y)`.
 
 # Examples
-```
+```jldoctest
 julia> isshorter = missingsmallest((s1, s2) -> isless(length(s1), length(s2)));
 
 julia> isshorter("short", "longstring")
@@ -566,7 +566,7 @@ missing values appear at the end.
 # Examples
 ```jldoctest
 julia> sort(v, lt=missingsmallest)
-5-element Vector{Union{Missing, Int64}}:
+5-element Vector{Union{Missing, $Int}}:
    missing
    missing
   1
@@ -574,7 +574,7 @@ julia> sort(v, lt=missingsmallest)
  10
 
 julia> sort(v, lt=missingsmallest, rev=true)
-5-element Vector{Union{Missing, Int64}}:
+5-element Vector{Union{Missing, $Int}}:
  10
   2
   1
