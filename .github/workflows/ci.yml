@@ -7,6 +7,9 @@ on:
     branches:
       - main
     tags: '*'
+permissions:
+  contents: read
+  id-token: write
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
@@ -39,4 +42,5 @@ jobs:
       - uses: codecov/codecov-action@v7
         with:
           files: lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+          fail_ci_if_error: true
