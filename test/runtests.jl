@@ -203,7 +203,8 @@ end
     end
 
     @test passmissing(sin) === Missings.PassMissing{typeof(sin)}(sin)
-    @test passmissing(Int) === Missings.PassMissing{Type{Int}}(Int)
+    @test (@inferred passmissing(Int)(1.0)) === 1
+    @test (@inferred passmissing(Int)(missing)) === missing
     @test passmissing(cuberoot) === Missings.PassMissing{CubeRooter}(cuberoot)
 
     @testset "deprecated" begin
