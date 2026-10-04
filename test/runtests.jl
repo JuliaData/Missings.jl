@@ -4,6 +4,19 @@ using Test, SparseArrays, Documenter, Missings
 struct CubeRooter end
 (::CubeRooter)(x) = cbrt(x)
 
+struct ExtremeIndexVector{T} <: AbstractVector{T}
+    values::Vector{T}
+    first::Int
+end
+Base.size(x::ExtremeIndexVector) = size(x.values)
+Base.axes(x::ExtremeIndexVector) = (Base.Slice(x.first:(x.first + (length(x.values)-1))),)
+Base.IndexStyle(::Type{<:ExtremeIndexVector}) = IndexLinear()
+function Base.getindex(x::ExtremeIndexVector, i::Int)
+    # Keep this check active under @inbounds to report wrapped indices safely.
+    x.first <= i <= x.first + (length(x.values)-1) || throw(BoundsError(x, i))
+    return x.values[i-x.first+1]
+end
+
 @testset "Missings" begin
     x = Missings.replace([1, 2, missing, 4], 3)
     @test eltype(x) === Int
@@ -43,6 +56,25 @@ struct CubeRooter end
     @test eltype(x) === Any
     @test collect(x) == [0, 1, 0, 2, 4]
     @test collect(x) isa Vector{Int}
+
+    @testset "missing replacements" begin
+        for values in (Union{Int, Missing}[1, missing, 2],
+                       [missing, missing], Union{Int, Missing}[], Missing[],
+                       Union{Int, Missing}[1 missing; missing 2],
+                       fill(missing, 2, 2),
+                       view(Union{Int, Missing}[1, missing, 2], 1:2),
+                       Any[1, missing], reshape(Union{Int, Missing}[], 0, 2))
+            replaced = Missings.replace(values, missing)
+            @test eltype(replaced) === eltype(values)
+            @test isequal(collect(replaced), values)
+            @test eltype(collect(replaced)) === eltype(values)
+            @test all(isequal(replaced[i], values[i]) for i in eachindex(values))
+        end
+        replaced = Missings.replace((v for v in [1, missing, 2]), missing)
+        @test eltype(replaced) === Any
+        @test isequal(collect(replaced), [1, missing, 2])
+        @test length(replaced) == 3
+    end
 
     x = Missings.fail([1, 2, 3, 4])
     @test eltype(x) === Int
@@ -190,7 +222,8 @@ struct CubeRooter end
     end
 
     @test passmissing(sin) === Missings.PassMissing{typeof(sin)}(sin)
-    @test passmissing(Int) === Missings.PassMissing{Type{Int}}(Int)
+    @test (@inferred passmissing(Int)(1.0)) === 1
+    @test (@inferred passmissing(Int)(missing)) === missing
     @test passmissing(cuberoot) === Missings.PassMissing{CubeRooter}(cuberoot)
 
     @testset "deprecated" begin
@@ -244,6 +277,44 @@ struct CubeRooter end
         @static if VERSION >= v"1.4.0-DEV"
             @inferred Union{Missing, Int} sum(mx)
             @inferred Union{Missing, Int} reduce(+, mx)
+        end
+
+        @testset "integer endpoint reductions" begin
+            for n in (0, 1, 2, 16, 1024, 1025), endpoint in (:min, :max),
+                pattern in (:valid, :xmissing, :ymissing, :last, :lasttwo, :alternating)
+                xvals = Vector{Union{Missing,Int}}(1:n)
+                yvals = Vector{Union{Missing,Int}}(2 .* (1:n))
+                if pattern === :xmissing
+                    fill!(xvals, missing)
+                elseif pattern === :ymissing
+                    fill!(yvals, missing)
+                elseif pattern === :last || pattern === :lasttwo
+                    fill!(xvals, missing)
+                    count = pattern === :last ? 1 : 2
+                    for i in max(1, n-count+1):n
+                        xvals[i] = i
+                    end
+                elseif pattern === :alternating
+                    for i in 1:n
+                        isodd(i) && (xvals[i] = missing)
+                        i % 3 == 0 && (yvals[i] = missing)
+                    end
+                end
+                # Empty axes end at start - 1, which must remain representable.
+                start = endpoint === :max ? typemax(Int)-max(n-1, 0) : typemin(Int)+Int(n == 0)
+                x = ExtremeIndexVector(xvals, start)
+                y = ExtremeIndexVector(yvals, start)
+                if n == 0 && pattern === :valid
+                    @test isempty(axes(x, 1))
+                    @test length(axes(x, 1)) == 0
+                end
+                expected_x = Int[xvals[i] for i in 1:n if xvals[i] !== missing && yvals[i] !== missing]
+                expected_y = Int[yvals[i] for i in 1:n if xvals[i] !== missing && yvals[i] !== missing]
+                for (iterator, expected) in zip(skipmissings(x, y), (expected_x, expected_y))
+                    @test sum(iterator) == sum(expected)
+                    @test mapreduce(abs2, +, iterator) == sum(abs2, expected)
+                end
+            end
         end
     end
 

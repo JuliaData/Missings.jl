@@ -59,6 +59,8 @@ and `eachindex` and `keys` return the indices of `itr`.
 
 If the type of `replacement` differs from the element type of `itr`,
 it will be converted to it.
+When the input element type permits `missing`, a `missing` replacement leaves
+missing values unchanged.
 
 See also: [`skipmissing`](@ref), [`Missings.fail`](@ref)
 
@@ -89,7 +91,8 @@ Base.IteratorEltype(::Type{<:EachReplaceMissing{T}}) where {T} =
 Base.length(itr::EachReplaceMissing) = length(itr.x)
 Base.size(itr::EachReplaceMissing) = size(itr.x)
 Base.axes(itr::EachReplaceMissing) = axes(itr.x)
-Base.eltype(itr::EachReplaceMissing) = nonmissingtype(eltype(itr.x))
+Base.eltype(itr::EachReplaceMissing{T, U}) where {T, U} =
+    Union{nonmissingtype(eltype(itr.x)), U}
 Base.eachindex(itr::EachReplaceMissing) = eachindex(itr.x)
 Base.keys(itr::EachReplaceMissing) = keys(itr.x)
 
@@ -378,14 +381,17 @@ function Base._mapreduce(f, op, ::IndexLinear, itr::SkipMissingsofArrays)
     @inbounds while i <= ilast
         ai = A[i]
         ai === missing || _anymissingindex(itr.others, i) || break
+        i == ilast && return Base.mapreduce_empty(f, op, Base.eltype(itr))
         i += 1
     end
     i > ilast && return Base.mapreduce_empty(f, op, Base.eltype(itr))
     a1::eltype(itr.x) = ai
+    i == ilast && return Base.mapreduce_first(f, op, a1)
     i += 1
     @inbounds while i <= ilast
         ai = A[i]
         ai === missing || _anymissingindex(itr.others, i) || break
+        i == ilast && return Base.mapreduce_first(f, op, a1)
         i += 1
     end
     i > ilast && return Base.mapreduce_first(f, op, a1)
@@ -399,7 +405,7 @@ Base._mapreduce(f, op, ::IndexCartesian, itr::SkipMissingsofArrays) = mapfoldl(f
 Base.mapreduce_impl(f, op, A::SkipMissingsofArrays, ifirst::Integer, ilast::Integer) =
     Base.mapreduce_impl(f, op, A, ifirst, ilast, Base.pairwise_blocksize(f, op))
 
-# Returns nothing when the input contains only missing values, and Some(x) otherwise
+# Returns nothing when the range has no retained values, and Some(x) otherwise
 @noinline function Base.mapreduce_impl(f, op, itr::SkipMissingsofArrays,
                                        ifirst::Integer, ilast::Integer, blksize::Int)
     A = itr.x
@@ -412,25 +418,29 @@ Base.mapreduce_impl(f, op, A::SkipMissingsofArrays, ifirst::Integer, ilast::Inte
         else
             return Some(Base.mapreduce_first(f, op, a1))
         end
-    elseif ifirst + blksize > ilast
+    elseif ilast - ifirst < blksize
         # sequential portion
         local ai
         i = ifirst
         @inbounds while i <= ilast
             ai = A[i]
             ai === missing || _anymissingindex(itr.others, i) || break
+            i == ilast && return nothing
             i += 1
         end
         i > ilast && return nothing
         a1 = ai::eltype(itr)
+        i == ilast && return Some(Base.mapreduce_first(f, op, a1))
         i += 1
         @inbounds while i <= ilast
             ai = A[i]
             ai === missing || _anymissingindex(itr.others, i) || break
+            i == ilast && return Some(Base.mapreduce_first(f, op, a1))
             i += 1
         end
         i > ilast && return Some(Base.mapreduce_first(f, op, a1))
         a2 = ai::eltype(itr)
+        i == ilast && return Some(op(f(a1), f(a2)))
         i += 1
         v = op(f(a1), f(a2))
         @simd for i = i:ilast
@@ -440,7 +450,7 @@ Base.mapreduce_impl(f, op, A::SkipMissingsofArrays, ifirst::Integer, ilast::Inte
         return Some(v)
     else
         # pairwise portion
-        imid = (ifirst + ilast) >> 1
+        imid = ifirst + ((ilast - ifirst) >> 1)
         v1 = Base.mapreduce_impl(f, op, itr, ifirst, imid, blksize)
         v2 = Base.mapreduce_impl(f, op, itr, imid+1, ilast, blksize)
         if v1 === nothing && v2 === nothing
