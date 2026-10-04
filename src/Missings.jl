@@ -59,7 +59,8 @@ and `eachindex` and `keys` return the indices of `itr`.
 
 If the type of `replacement` differs from the element type of `itr`,
 it will be converted to it.
-A `missing` replacement leaves missing values unchanged.
+When the input element type permits `missing`, a `missing` replacement leaves
+missing values unchanged.
 
 See also: [`skipmissing`](@ref), [`Missings.fail`](@ref)
 
