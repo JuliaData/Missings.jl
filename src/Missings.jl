@@ -59,6 +59,7 @@ and `eachindex` and `keys` return the indices of `itr`.
 
 If the type of `replacement` differs from the element type of `itr`,
 it will be converted to it.
+A `missing` replacement leaves missing values unchanged.
 
 See also: [`skipmissing`](@ref), [`Missings.fail`](@ref)
 
@@ -89,7 +90,8 @@ Base.IteratorEltype(::Type{<:EachReplaceMissing{T}}) where {T} =
 Base.length(itr::EachReplaceMissing) = length(itr.x)
 Base.size(itr::EachReplaceMissing) = size(itr.x)
 Base.axes(itr::EachReplaceMissing) = axes(itr.x)
-Base.eltype(itr::EachReplaceMissing) = nonmissingtype(eltype(itr.x))
+Base.eltype(itr::EachReplaceMissing{T, U}) where {T, U} =
+    Union{nonmissingtype(eltype(itr.x)), U}
 Base.eachindex(itr::EachReplaceMissing) = eachindex(itr.x)
 Base.keys(itr::EachReplaceMissing) = keys(itr.x)
 
