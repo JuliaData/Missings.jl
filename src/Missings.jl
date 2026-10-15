@@ -89,7 +89,8 @@ Base.IteratorEltype(::Type{<:EachReplaceMissing{T}}) where {T} =
 Base.length(itr::EachReplaceMissing) = length(itr.x)
 Base.size(itr::EachReplaceMissing) = size(itr.x)
 Base.axes(itr::EachReplaceMissing) = axes(itr.x)
-Base.eltype(itr::EachReplaceMissing) = nonmissingtype(eltype(itr.x))
+Base.eltype(itr::EachReplaceMissing{T, U}) where {T, U} =
+    Union{nonmissingtype(eltype(itr.x)), U}
 Base.eachindex(itr::EachReplaceMissing) = eachindex(itr.x)
 Base.keys(itr::EachReplaceMissing) = keys(itr.x)
 

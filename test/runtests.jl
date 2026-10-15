@@ -57,6 +57,25 @@ end
     @test collect(x) == [0, 1, 0, 2, 4]
     @test collect(x) isa Vector{Int}
 
+    @testset "missing replacements" begin
+        for values in (Union{Int, Missing}[1, missing, 2],
+                       [missing, missing], Union{Int, Missing}[], Missing[],
+                       Union{Int, Missing}[1 missing; missing 2],
+                       fill(missing, 2, 2),
+                       view(Union{Int, Missing}[1, missing, 2], 1:2),
+                       Any[1, missing], reshape(Union{Int, Missing}[], 0, 2))
+            replaced = Missings.replace(values, missing)
+            @test eltype(replaced) === eltype(values)
+            @test isequal(collect(replaced), values)
+            @test eltype(collect(replaced)) === eltype(values)
+            @test all(isequal(replaced[i], values[i]) for i in eachindex(values))
+        end
+        replaced = Missings.replace((v for v in [1, missing, 2]), missing)
+        @test eltype(replaced) === Any
+        @test isequal(collect(replaced), [1, missing, 2])
+        @test length(replaced) == 3
+    end
+
     x = Missings.fail([1, 2, 3, 4])
     @test eltype(x) === Int
     @test length(x) == 4
